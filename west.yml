@@ -23,8 +23,8 @@ manifest:
       url-base: https://github.com/zephyrproject-rtos
     - name: babblesim
       url-base: https://github.com/BabbleSim
-    - name: Maxjta
-      url-base: https://github.com/Maxjta
+    - name: ArteryTek
+      url-base: https://github.com/ArteryTek
 
   group-filter: [-babblesim, -optional]
 
@@ -159,8 +159,8 @@ manifest:
       groups:
         - hal
     - name: hal_at32
-      remote: Maxjta
-      revision: 7fcb8c19738351ee255fe95c69cf094fae61be2f
+      remote: ArteryTek
+      revision: 07d127d2e59d200f31f85db0e0cf6c75c053134d
       path: modules/hal/at32
       groups:
         - hal
