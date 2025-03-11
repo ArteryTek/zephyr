@@ -168,6 +168,14 @@ tests:
       - longan_nano/gd32vf103/lite
     integration_platforms:
       - gd32f403z_eval
+  drivers.spi.at32_spi_interrupt.loopback:
+    extra_args: EXTRA_CONF_FILE="overlay-at32-spi-interrupt.conf"
+    platform_allow:
+      - at_start_f405
+  drivers.spi.at32_spi_dma.loopback:
+    extra_args: EXTRA_CONF_FILE="overlay-at32-spi-dma.conf"
+    platform_allow:
+      - at_start_f405
   drivers.spi.pl022_spi_interrupt.loopback:
     extra_args: DTC_OVERLAY_FILE="boards/rpi_pico_pl022.overlay"
     extra_configs:

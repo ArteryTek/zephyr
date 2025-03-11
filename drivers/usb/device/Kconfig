@@ -105,6 +105,14 @@ config USB_DC_SAM_USBHS
 	help
 	  SAM family USB HS device controller Driver.
 
+config USB_DC_AT32
+	bool "AT32 series USB Device Controller driver"
+	default y
+	select USE_AT32_USB
+	depends on DT_HAS_AT_AT32_OTGHS_ENABLED || DT_HAS_AT_AT32_OTGFS_ENABLED
+	help
+	    AT32 family USB device controller Driver.
+
 config USB_NRFX
 	bool "Nordic Semiconductor USB Device Controller Driver"
 	default y

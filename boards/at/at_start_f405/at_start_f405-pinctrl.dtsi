@@ -11,4 +11,10 @@
 			pinmux = <USART1_TX_PA9>, <USART1_RX_PA10>;
 		};
 	};
+	spi1_default: spi1_default {
+		group1 {
+			pinmux = <SPI1_SCK_PA5>, <SPI1_MOSI_PA7>,
+				 <SPI1_MISO_PA6>;
+		};
+	};
 };
