@@ -35,6 +35,7 @@ tests:
       - gd32f470i_eval
       - stm32h735g_disco
       - stm32h573i_dk
+      - at_start_f405
       - rpi_pico
       - mr_canhubk3
       - s32z2xxdc2/s32z270/rtu0

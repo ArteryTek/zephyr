@@ -1,0 +1,16 @@
+# STM32 PWM configuration options
+
+# Copyright (c) 2016 Linaro Limited.
+# SPDX-License-Identifier: Apache-2.0
+
+config PWM_AT32
+	bool "AT32 MCU PWM driver"
+	default y
+	depends on DT_HAS_AT_AT32_PWM_ENABLED
+	select USE_AT32_TIMER
+	select RESET
+	select PINCTRL
+	help
+	  This option enables the PWM driver for AT32 family of
+	  processors. Say y if you wish to use PWM port on AT32
+	  MCU.

@@ -126,3 +126,14 @@
 	pinctrl-0 = <&i2c1_default>;
 	pinctrl-names = "default";
 };
+
+&timer2 {
+    status = "okay";
+	at,prescaler = <9999>;
+	
+	pwm1: pwm {
+		status = "okay";
+		pinctrl-0 = <&pwm1_default>;
+		pinctrl-names = "default";
+	};
+};

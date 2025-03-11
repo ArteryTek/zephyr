@@ -22,4 +22,9 @@
 			pinmux = <I2C1_SCL_PB8>, <I2C1_SDA_PB9>;
 		};
 	};
+	pwm1_default: pwm1_default {
+		group1 {
+			pinmux = <TMR2_CH2_PB3>;
+		};
+	};
 };
