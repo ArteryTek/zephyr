@@ -137,3 +137,19 @@
 		pinctrl-names = "default";
 	};
 };
+
+&dma1 {
+    status = "okay";
+};
+
+&adc1 {
+	pinctrl-0 = <&adc1_default>;
+	pinctrl-names = "default";
+	at,adc-clock-source = "SYNC";
+	at,adc-prescaler = <15>;
+	status = "okay";
+	dmas = <&dma1 3 5 (AT32_DMA_PERIPH_TO_MEMORY|AT32_DMA_NO_PERIPH_ADDR_INC| 
+	                  AT32_DMA_MEMORY_ADDR_INC|AT32_DMA_PERIPH_WIDTH_16BIT|
+					  AT32_DMA_MEMORY_WIDTH_16BIT|AT32_DMA_PRIORITY_HIGH) 0>;
+	dma-names = "rx";
+};

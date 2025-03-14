@@ -27,4 +27,9 @@
 			pinmux = <TMR2_CH2_PB3>;
 		};
 	};
+	adc1_default: adc1_default {
+		group1 {
+			pinmux = <ADC1_IN0_PA0>, <ADC1_IN1_PA1>, <ADC1_IN2_PA2>;
+		};
+	};
 };

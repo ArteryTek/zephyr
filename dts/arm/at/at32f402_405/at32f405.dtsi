@@ -6,8 +6,10 @@
 
 #include <arm/armv7-m.dtsi>
 #include <zephyr/dt-bindings/gpio/gpio.h>
+#include <zephyr/dt-bindings/adc/adc.h>
 #include <zephyr/dt-bindings/pwm/pwm.h>
 #include <zephyr/dt-bindings/i2c/i2c.h>
+#include <zephyr/dt-bindings/dma/at32_dma.h>
 #include <zephyr/dt-bindings/clock/at32f402_405_clocks.h>
 #include <zephyr/dt-bindings/reset/at32f402_405_reset.h>
 
@@ -571,6 +573,18 @@
 				status = "disabled";
 				#pwm-cells = <3>;
 			};
+		};
+	    adc1: adc@40012000 {
+			compatible = "at,at32-adc";
+			reg = <0x40012000 0x400>;
+			clocks = <&cctl AT32_CLOCK_ADC1>;
+			interrupts = <18 0>;
+			status = "disabled";
+			#io-channel-cells = <1>;
+			resolutions = <12 10>;
+			sampling-times = <2 8 14 29 42 56 72 240>;
+			at,adc-clock-source = "SYNC";
+			at,adc-sequencer = "FULLY_CONFIGURABLE";
 		};
 	};
 };

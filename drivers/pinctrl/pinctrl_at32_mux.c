@@ -72,7 +72,12 @@ static void pinctrl_configure_pin(pinctrl_soc_pin_t pin)
 	gpio = (gpio_type *)port;
 	
 	init.gpio_pins = gpio_pins;
-	init.gpio_mode = GPIO_MODE_MUX;
+	if (mux != AT32_ANALOG) {
+        init.gpio_mode = GPIO_MODE_MUX;
+	} else {
+		init.gpio_mode = GPIO_MODE_ANALOG;
+	}
+	
 	init.gpio_out_type = GPIO_OUTPUT_PUSH_PULL;
 
 	(void)clock_control_on(AT32_CLOCK_CONTROLLER,

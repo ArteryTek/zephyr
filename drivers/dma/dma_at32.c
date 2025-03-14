@@ -317,7 +317,7 @@ static int dma_at32_configure(const struct device *dev, uint32_t channel,
 	dma_channel_type *dma_channel = (dma_channel_type *)(cfg->reg + dma_at32_channel(CH_OFFSET(channel))) ;
 	dmamux_channel_type *dmamux_channelx = (dmamux_channel_type *)(cfg->reg + dma_at32_dmamux(CH_OFFSET(channel)));
 	dma_default_para_init(&dma_init_struct);
-
+    
 	if (CH_OFFSET(channel) >= cfg->channels) {
 		LOG_ERR("channel must be < %" PRIu32 " (%" PRIu32 ")",
 			cfg->channels, channel);
@@ -351,6 +351,7 @@ static int dma_at32_configure(const struct device *dev, uint32_t channel,
             dma_cfg->head_block->source_addr_adj);
 		return -ENOTSUP;
 	}
+
 	if (dma_cfg->head_block->dest_addr_adj != DMA_ADDR_ADJ_INCREMENT &&
 	    dma_cfg->head_block->dest_addr_adj != DMA_ADDR_ADJ_NO_CHANGE) {
 		LOG_ERR("invalid dest_addr_adj %" PRIu16,
@@ -384,6 +385,7 @@ static int dma_at32_configure(const struct device *dev, uint32_t channel,
 		LOG_ERR("not supporting MEMORY_TO_MEMORY");
 		return -ENOTSUP;
 	}
+
     dma_reset(dma_channel);
 
 	src_cfg.addr = dma_cfg->head_block->source_address;
