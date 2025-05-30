@@ -5,3 +5,6 @@ family:
     socs:
     - name: at32f405
     - name: at32f402
+  - name: at32f423
+    socs:
+    - name: at32f423

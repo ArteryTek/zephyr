@@ -37,11 +37,7 @@ properties:
     required: true
     description: |
         Main PLL division factor for PLLSAI2CLK
-    enum:
-      - 2
-      - 4
-      - 6
-      - 8
+        Valid range: 0 - 15
 
   div-fu:
     type: int

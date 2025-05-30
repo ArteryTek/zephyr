@@ -10,8 +10,8 @@
 #include <zephyr/dt-bindings/pwm/pwm.h>
 #include <zephyr/dt-bindings/i2c/i2c.h>
 #include <zephyr/dt-bindings/dma/at32_dma.h>
-#include <zephyr/dt-bindings/clock/at32f402_405_clocks.h>
-#include <zephyr/dt-bindings/reset/at32f402_405_reset.h>
+#include <zephyr/dt-bindings/clock/at32f423_clocks.h>
+#include <zephyr/dt-bindings/reset/at32f423_reset.h>
 
 / {
 	cpus {
@@ -171,6 +171,16 @@
 				status = "disabled";
 			};
 
+			gpioe: gpio@40021000 {
+				compatible = "at,at32-gpio";
+				gpio-controller;
+				#gpio-cells = <2>;
+				reg = <0x40021000 0x400>;
+				clocks = <&cctl AT32_CLOCK_GPIOE>;
+				resets = <&rctl AT32_RESET_GPIOE>;
+				status = "disabled";
+			};
+
 			gpiof: gpio@40021400 {
 				compatible = "at,at32-gpio";
 				gpio-controller;
@@ -251,20 +261,6 @@
 			interrupts = <83 0>;
 			clocks = <&cctl AT32_CLOCK_UART8>;
             resets = <&rctl AT32_RESET_UART8>;
-			status = "disabled";
-		};
-    
-        usbotg_hs: usb@40040000 {
-			compatible = "at,at32-otghs";
-			reg = <0x40040000 0x40000>;
-			interrupts = <77 0>;
-            num-in-eps = <8>;
-            num-out-eps = <8>;
-            ram-size = <4096>;
-            ghwcfg1 = <0>;
-            ghwcfg2 = <0>;
-            ghwcfg4 = <0>;
-            clocks = <&cctl AT32_CLOCK_USBHS>;
 			status = "disabled";
 		};
     
@@ -585,29 +581,6 @@
 			sampling-times = <2 8 14 29 42 56 72 240>;
 			at,adc-clock-source = "SYNC";
 			at,adc-sequencer = "FULLY_CONFIGURABLE";
-		};
-
-		wdt: watchdog@40003000 {
-			compatible = "at,at32-watchdog";
-			reg = <0x40003000 0x400>;
-			status = "disabled";
-		};
-
-		wwdt: watchdog@40002c00 {
-			compatible = "at,at32-window-watchdog";
-			reg = <0x40002C00 0x400>;
-			clocks = <&cctl AT32_CLOCK_WWDT>;
-			interrupts = <0 7>;
-			status = "disabled";
-		};
-
-		can1: can@40006400 {
-			compatible = "at,at32-bxcan";
-			reg = <0x40006400 0x400>;
-			interrupts = <19 0>, <20 0>, <21 0>, <22 0>;
-			interrupt-names = "TX", "RX0", "RX1", "SCE";
-			clocks = <&cctl AT32_CLOCK_CAN1>;
-			status = "disabled";
 		};
 	};
 };

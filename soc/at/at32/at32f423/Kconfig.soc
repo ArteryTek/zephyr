@@ -1,0 +1,18 @@
+# Copyright (c) 2024, Maxjta
+# SPDX-License-Identifier: Apache-2.0
+
+config SOC_SERIES_AT32F423
+	bool
+	select SOC_FAMILY_AT32
+	help
+	  Enable support for Artery AT32F423 MCU series
+
+config SOC_SERIES
+	default "at32f423" if SOC_SERIES_AT32F423
+
+config SOC_AT32F423
+	bool
+	select SOC_SERIES_AT32F423
+
+config SOC
+	default "at32f423" if SOC_AT32F423

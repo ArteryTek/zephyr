@@ -3,17 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <dt-bindings/pinctrl/at32f405r(c-g-m)xx-pinctrl.h>
+#include <dt-bindings/pinctrl/at32f423v(c)xx-pinctrl.h>
 
 &pinctrl {
 	usart1_default: usart1_default {
 		group1 {
 			pinmux = <USART1_TX_PA9>, <USART1_RX_PA10>;
-		};
-	};
-	can1_default: can1_default {
-		group1 {
-			pinmux = <CAN1_RX_PA11>, <CAN1_TX_PA12>;
 		};
 	};
 	spi1_default: spi1_default {

@@ -1,0 +1,33 @@
+# SPDX-License-Identifier: Apache-2.0
+
+#Config Default System clock
+CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC=144000000
+ 
+# Enable MPU
+CONFIG_ARM_MPU=n
+
+# Enable HW stack protection
+CONFIG_HW_STACK_PROTECTION=n
+
+# Enable Reset
+CONFIG_RESET=y
+
+# Enable GPIO
+CONFIG_GPIO=y
+CONFIG_PINCTRL=y
+
+# console
+CONFIG_SERIAL=y
+CONFIG_CONSOLE=y
+CONFIG_UART_CONSOLE=y
+
+#enable SPI
+#CONFIG_SPI=y
+#CONFIG_SPI_AT32_DMA=y
+
+#enable usb
+CONFIG_USB_DEVICE_VID=0x2E3C
+CONFIG_UART_CONSOLE=y
+
+CONFIG_DMA=y
+CONFIG_ADC_AT32_DMA=y

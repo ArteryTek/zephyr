@@ -1,0 +1,13 @@
+identifier: at_start_f423
+name: AT AT-START-F423
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+  - gnuarmemb
+  - xtools
+supported:
+  - gpio
+ram: 48
+flash: 256
+vendor: artery
