@@ -25,6 +25,7 @@
 	i2c1_default: i2c1_default {
 		group1 {
 			pinmux = <I2C1_SCL_PB8>, <I2C1_SDA_PB9>;
+			drive-open-drain;
 		};
 	};
 	pwm1_default: pwm1_default {
