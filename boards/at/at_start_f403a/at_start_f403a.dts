@@ -1,0 +1,131 @@
+/*
+ * Copyright (c) 2025 Maxjta
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+#include <at/at32f403a_407/at32f403avgt7.dtsi>
+#include "at_start_f403a-pinctrl.dtsi"
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+
+/ {
+	model = "AT AT-START-F403A board";
+	compatible = "at,at_start_f403a";
+
+	chosen {
+		zephyr,console = &usart1;
+		zephyr,shell-uart = &usart1;
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+	};
+
+	leds: leds {
+		compatible = "gpio-leds";
+		red_led: led2 {
+			gpios = <&gpiod 13 GPIO_ACTIVE_HIGH>;
+			label = "User LED2";
+		};
+		yellow_led: led3 {
+			gpios = <&gpiod 14 GPIO_ACTIVE_HIGH>;
+			label = "User LED3";
+		};
+		green_led: led4 {
+			gpios = <&gpiod 15 GPIO_ACTIVE_HIGH>;
+			label = "User LED4";
+		};
+	};
+
+	gpio_keys {
+		compatible = "gpio-keys";
+		user_button: button {
+			label = "User";
+			gpios = <&gpioa 0 GPIO_ACTIVE_HIGH>;
+			zephyr,code = <INPUT_KEY_0>;
+		};
+	};
+
+	aliases {
+		led0 = &red_led;
+		led1 = &yellow_led;
+		led2 = &green_led;
+		sw0 = &user_button;
+	};
+};
+
+&gpioa {
+    status = "okay";
+};
+
+&gpiob {
+    status = "okay";
+};
+
+&gpioc {
+    status = "okay";
+};
+
+&gpiod {
+    status = "okay";
+};
+
+&gpioe {
+    status = "okay";
+};
+
+&clk_hick {
+	status = "okay";
+};
+
+&clk_hext {
+	clock-frequency = <8000000>;
+	status = "okay";
+};
+
+&pll {
+	mul = <48>;
+	div_fu = <6>;
+	xtpre = <1>;
+	clocks = <&clk_hext>;
+	status = "okay";
+};
+
+&sysclk {
+	clock-frequency = <DT_FREQ_M(192)>;
+	status = "okay";
+};
+
+&crm {
+	clocks = <&pll>;
+	ahb-prescaler = <1>;
+	clock-frequency = <192000000>;
+	apb1-prescaler = <2>;
+	apb2-prescaler = <2>;
+	status = "okay";
+};
+
+&usb_fs {
+    status = "okay";
+};
+
+&usart1 {
+	pinctrl-0 = <&usart1_default>;
+	pinctrl-names = "default";
+	current-speed = <115200>;
+	status = "okay";
+};
+
+&spi1 {
+	status = "okay";
+	pinctrl-0 = <&spi1_default>;
+	pinctrl-names = "default";
+	cs-gpios = <&gpioa 4 GPIO_ACTIVE_LOW>;
+	dmas = <&dma1 1 10 1 0>, <&dma1 2 11 2 0>;
+	dma-names = "rx", "tx";
+};
+
+&dma1 {
+	status = "okay";
+};
+
+

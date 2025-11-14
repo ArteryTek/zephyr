@@ -1,7 +1,4 @@
 # SPDX-License-Identifier: Apache-2.0
-
-#Config Default System clock
-CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC=144000000
  
 # Enable MPU
 CONFIG_ARM_MPU=n
@@ -14,7 +11,7 @@ CONFIG_RESET=y
 
 # Enable GPIO
 CONFIG_GPIO=y
-CONFIG_PINCTRL=y
+#CONFIG_PINCTRL=y
 
 # console
 CONFIG_SERIAL=y

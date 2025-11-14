@@ -1,28 +1,26 @@
-.. _at_start_f405_board:
+.. _at_start_f423_board:
 
-AT-START-F405
+AT-START-F423
 ################
 
 Overview
 ********
 
-The AT START F405 board features an ARM Cortex-M4 based AT32F405 MCU
+The AT START F423 board features an ARM Cortex-M4 based AT32F423 MCU
 with a wide range of connectivity support and configurations. 
 
 Hardware
 ********
 
 - ARM Cortex-M4F Processor
-- Core clock up to 216 MHz
+- Core clock up to 150 MHz
 - 256KB Flash memory
-- 96 KB SRAM
-- 1x12-bit 2MSPS ADC
+- 48 KB SRAM
+- 1x12-bit 5MSPS ADC
 - Up to 6x USART and 2x UART
 - Up to 3x I2C
 - Up to 3x SPI
-- 1x QSPI interface
 - 1x CAN interface(2.0B Active)
-- 1x OTGHS on chip phy, Support usb2.0 high speed
 - 1x OTGFS Support usb2.0 Full speed
 - Up to 14 times
 
@@ -55,7 +53,7 @@ The following features are supported:
 +-----------+------------+-------------------------------------+
 
 The default configuration can be found in the defconfig file:
-:zephyr_file:`boards/at/at_start_f405/at_start_f405_defconfig`
+:zephyr_file:`boards/at/at_start_f423/at_start_f423_defconfig`
 
 
 Programming and Debugging

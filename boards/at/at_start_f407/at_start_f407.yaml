@@ -1,0 +1,13 @@
+identifier: at_start_f407
+name: AT AT-START-F407
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+  - gnuarmemb
+  - xtools
+supported:
+  - gpio
+ram: 96
+flash: 1024
+vendor: artery

@@ -153,6 +153,9 @@ static void adc_at32_enable_dma_support(adc_type *adc)
 {
 	/* Allow ADC to create DMA request and set to one-shot mode as implemented in HAL drivers */
     adc_dma_mode_enable(adc, TRUE);
+#if defined	(AT32_ADC_5M)
+	adc_dma_request_repeat_enable(adc, TRUE);
+#endif
 }
 
 static int adc_at32_dma_start(const struct device *dev,
@@ -194,7 +197,6 @@ static int adc_at32_dma_start(const struct device *dev,
 		LOG_ERR("Problem setting up DMA: %d", ret);
 		return ret;
 	}
-//	adc_at32_enable_dma_support(adc);
 
 	data->dma_error = 0;
 	ret = dma_start(data->dma.dma_dev, data->dma.channel);
@@ -776,6 +778,7 @@ static int adc_at32_set_clock(const struct device *dev)
 {
 	const struct adc_at32_cfg *config = dev->config;
 	__maybe_unused adc_type *adc = config->base;
+
 	int ret = 0;
 
 	if (clock_control_on(AT32_CLOCK_CONTROLLER,
@@ -783,7 +786,13 @@ static int adc_at32_set_clock(const struct device *dev)
 		return -EIO;
 	}
 #if defined(AT32_ADC_COMM_PSC)
-    adc_clock_div_set(config->clk_prescaler);
+#if defined(AT32_ADC_5M)
+	ADCCOM->cctrl_bit.adcdiv = config->clk_prescaler;
+#elif defined(AT32_ADC_CRM_DIV)
+	crm_adc_clock_div_set(config->clk_prescaler);
+#else
+	adc_clock_div_set(config->clk_prescaler);
+#endif
 #endif
 	return ret;
 }

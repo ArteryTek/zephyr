@@ -12,6 +12,7 @@
 #include <zephyr/dt-bindings/dma/at32_dma.h>
 #include <zephyr/dt-bindings/clock/at32f423_clocks.h>
 #include <zephyr/dt-bindings/reset/at32f423_reset.h>
+#include <freq.h>
 
 / {
 	cpus {
@@ -58,6 +59,13 @@
 		pll: pll {
 			#clock-cells = <0>;
 			compatible = "at,at32-pll";
+			status = "disabled";
+		};
+
+		sysclk: sysclk {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <DT_FREQ_M(150)>;
 			status = "disabled";
 		};
 	};
@@ -577,8 +585,8 @@
 			interrupts = <18 0>;
 			status = "disabled";
 			#io-channel-cells = <1>;
-			resolutions = <12 10>;
-			sampling-times = <2 8 14 29 42 56 72 240>;
+			resolutions = <12 10 8 6>;
+			sampling-times = <3 7 13 25 48 93 248 641>;
 			at,adc-clock-source = "SYNC";
 			at,adc-sequencer = "FULLY_CONFIGURABLE";
 		};

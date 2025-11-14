@@ -21,6 +21,7 @@
 #include <zephyr/drivers/clock_control/at32_clock_control.h>
 #include <zephyr/irq.h>
 
+#include <at32_gpio.h>
 #define EXINT_NOTSUP 0xFFU
 
 /** @brief EXINT lines range mapped to a single interrupt line */
@@ -46,41 +47,116 @@ struct at32_exint_data {
 	/* per-line callbacks */
 	struct __exti_cb cb[NUM_EXINT_LINES];
 };
-static scfg_port_source_type get_source_port(uint32_t port)
+static uint8_t get_source_port(uint32_t port)
 {
 	uint32_t port_index;
 	port_index = (port - (uint32_t)GPIOA) / ((uint32_t)GPIOB - (uint32_t)GPIOA);
-	return (scfg_port_source_type)port_index;
+	return (uint8_t)port_index;
 }
-
+#if DT_NODE_HAS_PROP(DT_NODELABEL(syscfg), reg)
 static uint32_t scfg_get_exint_port(scfg_pins_source_type pin_source)
 {
-    uint32_t tmp = 0x00;
-    tmp = ((uint32_t)0x0F) << (0x04 * (pin_source & (uint8_t)0x03));
+	uint32_t tmp = 0x00;
+	tmp = ((uint32_t)0x0F) << (0x04 * (pin_source & (uint8_t)0x03));
 
-    switch (pin_source >> 0x02)
-    {
-        case 0:
-            return  (SCFG->exintc1 >> (0x04 * (pin_source & (uint8_t)0x03))) & 0x0F;
-        case 1:
-            return  (SCFG->exintc2 >> (0x04 * (pin_source & (uint8_t)0x03))) & 0x0F;
-        case 2:
-            return  (SCFG->exintc3 >> (0x04 * (pin_source & (uint8_t)0x03))) & 0x0F;
-        case 3:
-            return  (SCFG->exintc4 >> (0x04 * (pin_source & (uint8_t)0x03))) & 0x0F;
-        default:
-	        return 0;
-  }
+	switch (pin_source >> 0x02) {
+		case 0:
+			return  (SCFG->exintc1 >> (0x04 * (pin_source & (uint8_t)0x03))) & 0x0F;
+		case 1:
+			return  (SCFG->exintc2 >> (0x04 * (pin_source & (uint8_t)0x03))) & 0x0F;
+		case 2:
+			return  (SCFG->exintc3 >> (0x04 * (pin_source & (uint8_t)0x03))) & 0x0F;
+		case 3:
+			return  (SCFG->exintc4 >> (0x04 * (pin_source & (uint8_t)0x03))) & 0x0F;
+		default:
+		return 0;
+	}
 	return 0;
 }
 
+static void exint_line_config(uint8_t port_source, uint8_t pin_source)
+{
+	uint32_t tmp = 0x00;
+	tmp = ((uint32_t)0x0F) << (0x04 * (pin_source & (uint8_t)0x03));
+
+	switch (pin_source >> 0x02) {
+		case 0:
+			SCFG->exintc1 &= ~tmp;
+			SCFG->exintc1 |= (((uint32_t)port_source) << (0x04 * (pin_source & (uint8_t)0x03)));
+			break;
+		case 1:
+			SCFG->exintc2 &= ~tmp;
+			SCFG->exintc2 |= (((uint32_t)port_source) << (0x04 * (pin_source & (uint8_t)0x03)));
+			break;
+		case 2:
+			SCFG->exintc3 &= ~tmp;
+			SCFG->exintc3 |= (((uint32_t)port_source) << (0x04 * (pin_source & (uint8_t)0x03)));
+			break;
+		case 3:
+			SCFG->exintc4 &= ~tmp;
+			SCFG->exintc4 |= (((uint32_t)port_source) << (0x04 * (pin_source & (uint8_t)0x03)));
+			break;
+		default:
+			break;
+	}
+}
+
+#else
+static uint32_t scfg_get_exint_port(uint8_t pin_source)
+{
+	uint32_t tmp = 0x00;
+	tmp = ((uint32_t)0x0F) << (0x04 * (pin_source & (uint8_t)0x03));
+
+	switch (pin_source >> 0x02) {
+		 case 0:
+			return  (IOMUX->exintc1 >> (0x04 * (pin_source & (uint8_t)0x03))) & 0x0F;
+		case 1:
+			return  (IOMUX->exintc2 >> (0x04 * (pin_source & (uint8_t)0x03))) & 0x0F;
+		case 2:
+			return  (IOMUX->exintc3 >> (0x04 * (pin_source & (uint8_t)0x03))) & 0x0F;
+		case 3:
+			return  (IOMUX->exintc4 >> (0x04 * (pin_source & (uint8_t)0x03))) & 0x0F;
+		default:
+			return 0;
+	}
+	return 0;
+}
+
+static void exint_line_config(uint8_t port_source, uint8_t pin_source)
+{
+	uint32_t tmp = 0x00;
+	tmp = ((uint32_t)0x0F) << (0x04 * (pin_source & (uint8_t)0x03));
+
+	switch (pin_source >> 0x02) {
+		case 0:
+			IOMUX->exintc1 &= ~tmp;
+			IOMUX->exintc1 |= (((uint32_t)port_source) << (0x04 * (pin_source & (uint8_t)0x03)));
+			break;
+		case 1:
+			IOMUX->exintc2 &= ~tmp;
+			IOMUX->exintc2 |= (((uint32_t)port_source) << (0x04 * (pin_source & (uint8_t)0x03)));
+    		break;
+		case 2:
+			IOMUX->exintc3 &= ~tmp;
+			IOMUX->exintc3 |= (((uint32_t)port_source) << (0x04 * (pin_source & (uint8_t)0x03)));
+			break;
+		case 3:
+			IOMUX->exintc4 &= ~tmp;
+			IOMUX->exintc4 |= (((uint32_t)port_source) << (0x04 * (pin_source & (uint8_t)0x03)));
+			break;
+		default:
+			break;
+	}
+}
+
+#endif
 /**
  * @returns the LL_<PPP>_EXINT_LINE_xxx define that corresponds to specified @p linenum
  * This value can be used with the EXUBT source configuration functions.
  */
 static inline uint32_t at32_exint_linenum_to_src_cfg_line(gpio_pin_t linenum)
 {
-  return (0xF << ((linenum % 4 * 4) + 16)) | (linenum / 4);
+	return (0xF << ((linenum % 4 * 4) + 16)) | (linenum / 4);
 }
 
 /**
@@ -90,7 +166,7 @@ static inline uint32_t at32_exint_linenum_to_src_cfg_line(gpio_pin_t linenum)
  */
 static inline int at32_exint_is_pending(at32_irq_line_t line)
 {
-  return exint_flag_get(line);
+	return exint_flag_get(line);
 }
 
 /**
@@ -100,7 +176,7 @@ static inline int at32_exint_is_pending(at32_irq_line_t line)
  */
 static inline void at32_exint_clear_pending(at32_irq_line_t line)
 {
-  exint_flag_clear(line);
+	exint_flag_clear(line);
 }
 
 /**
@@ -157,6 +233,7 @@ static int at32_exint_enable_registers(void)
 {
 	/* Initialize to 0 for series where there is nothing to do. */
 	int ret = 0;
+
 	return ret;
 }
 
@@ -194,7 +271,6 @@ static int at32_exint_init(const struct device *dev)
 			     interrupt_names,
 			     AT32_EXINT_INIT_LINE_RANGE);
 	return at32_exint_enable_registers();
-	return 0;
 }
 
 static struct at32_exint_data exint_data;
@@ -224,46 +300,46 @@ at32_irq_line_t at32_exint_intc_get_pin_irq_line(uint32_t port, gpio_pin_t pin)
 
 void at32_exint_intc_enable_line(at32_irq_line_t line)
 {
-    unsigned int irqnum;
-    uint32_t line_num = exint_line_to_linenum(line);
+	unsigned int irqnum;
+	uint32_t line_num = exint_line_to_linenum(line);
   
-    __ASSERT_NO_MSG(line_num < NUM_EXINT_LINES);
-    /* Get matching exint irq provided line thanks to irq_table */
-    irqnum = exint_irq_table[line_num];
-    __ASSERT_NO_MSG(irqnum != 0xFF);
+	__ASSERT_NO_MSG(line_num < NUM_EXINT_LINES);
+	/* Get matching exint irq provided line thanks to irq_table */
+	irqnum = exint_irq_table[line_num];
+	__ASSERT_NO_MSG(irqnum != 0xFF);
 
-    exint_interrupt_enable(line, TRUE);
-    /* Enable exint irq interrupt */
-    irq_enable(irqnum);
+	exint_interrupt_enable(line, TRUE);
+	/* Enable exint irq interrupt */
+	irq_enable(irqnum);
 }
 
 void at32_exint_intc_disable_line(at32_irq_line_t line)
 {
-    exint_interrupt_enable(line, FALSE);
+	exint_interrupt_enable(line, FALSE);
 }
 
 void at32_exint_intc_select_line_trigger(at32_irq_line_t line, uint32_t trigger)
 {
 	switch (trigger) {
-        case AT32_GPIO_IRQ_TRIG_NONE:
-            EXINT->polcfg1 &= ~line;
-            EXINT->polcfg2 &= ~line;
-            break;
-        case AT32_GPIO_IRQ_TRIG_RISING:
-            EXINT->polcfg1 |= line;
-            EXINT->polcfg2 &= ~line;
-            break;
-        case AT32_GPIO_IRQ_TRIG_FALLING:
-            EXINT->polcfg1 &= ~line;
-            EXINT->polcfg2 |= line;
-            break;
-        case AT32_GPIO_IRQ_TRIG_BOTH:
-            EXINT->polcfg1 |= line;
-            EXINT->polcfg2 |= line;
-            break;
-        default:
-            __ASSERT_NO_MSG(0);
-            break;
+		case AT32_GPIO_IRQ_TRIG_NONE:
+			EXINT->polcfg1 &= ~line;
+			EXINT->polcfg2 &= ~line;
+			break;
+		case AT32_GPIO_IRQ_TRIG_RISING:
+			EXINT->polcfg1 |= line;
+			EXINT->polcfg2 &= ~line;
+			break;
+		case AT32_GPIO_IRQ_TRIG_FALLING:
+			EXINT->polcfg1 &= ~line;
+			EXINT->polcfg2 |= line;
+			break;
+		case AT32_GPIO_IRQ_TRIG_BOTH:
+			EXINT->polcfg1 |= line;
+			EXINT->polcfg2 |= line;
+			break;
+		default:
+			__ASSERT_NO_MSG(0);
+			break;
 	}
 }
 
@@ -290,22 +366,23 @@ int at32_exint_intc_set_irq_callback(at32_irq_line_t line, at32_exint_irq_cb_t c
 
 void at32_exint_intc_remove_irq_callback(at32_irq_line_t line)
 {
-    const struct device *const dev = DEVICE_DT_GET(EXINT_NODE);
-    struct at32_exint_data *data = dev->data;
-    uint32_t line_num = exint_line_to_linenum(line);
+	const struct device *const dev = DEVICE_DT_GET(EXINT_NODE);
+	struct at32_exint_data *data = dev->data;
+	uint32_t line_num = exint_line_to_linenum(line);
 
-    data->cb[line_num].cb = NULL;
-    data->cb[line_num].data = NULL;
+	data->cb[line_num].cb = NULL;
+	data->cb[line_num].data = NULL;
 }
 
 void at32_exint_set_line_src_port(gpio_pin_t pin, uint32_t port)
 {
-    scfg_exint_line_config(get_source_port(port), pin);
+	exint_line_config(get_source_port(port), pin);
 }
 
 uint32_t at32_exint_get_line_src_port(gpio_pin_t pin)
 {
-    uint32_t port;
-    port = scfg_get_exint_port((scfg_pins_source_type)pin);
-	  return port;
+	uint32_t port;
+	port = scfg_get_exint_port(pin);
+
+	return port;
 }

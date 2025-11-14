@@ -7,4 +7,3 @@ config NUM_IRQS
 	default 104
 
 endif # SOC_AT32F405
-

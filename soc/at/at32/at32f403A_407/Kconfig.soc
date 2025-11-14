@@ -1,0 +1,23 @@
+# Copyright (c) 2024, Maxjta
+# SPDX-License-Identifier: Apache-2.0
+
+config SOC_SERIES_AT32F403A_407
+	bool
+	select SOC_FAMILY_AT32
+	help
+	  Enable support for Artery AT32F403A_407 MCU series
+
+config SOC_SERIES
+	default "at32f403a_407" if SOC_SERIES_AT32F403A_407
+
+config SOC_AT32F403A
+	bool
+	select SOC_SERIES_AT32F403A_407
+
+config SOC_AT32F407
+	bool
+	select SOC_SERIES_AT32F403A_407
+
+config SOC
+	default "at32f403a" if SOC_AT32F403A
+	default "at32f407" if SOC_AT32F407

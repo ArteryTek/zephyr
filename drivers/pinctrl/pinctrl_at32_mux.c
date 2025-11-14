@@ -8,6 +8,7 @@
 #include <zephyr/drivers/clock_control/at32_clock_control.h>
 #include <zephyr/drivers/pinctrl.h>
 
+#include <dt-bindings/pinctrl/at32_iomux.h>
 #include <at32_gpio.h>
 
 /** Utility macro that expands to the GPIO port address if it exists */

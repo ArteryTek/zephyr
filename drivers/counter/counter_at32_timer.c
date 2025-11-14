@@ -116,6 +116,7 @@ static void at32_disable_it(tmr_type *tmr_x, int id)
 static uint32_t at32_check_it_enabled(tmr_type *tmr_x, int id)
 {
     uint32_t enabled = 0;
+
     switch(id)
     {
         case 0:
@@ -131,12 +132,13 @@ static uint32_t at32_check_it_enabled(tmr_type *tmr_x, int id)
                enabled = 1;
             break;
         case 3:
-            if(tmr_x->iden & TMR_C3_INT)
+            if(tmr_x->iden & TMR_C4_INT)
                 enabled = 1;
             break;
         default:
             break;
     }
+
     return enabled;
 }
 

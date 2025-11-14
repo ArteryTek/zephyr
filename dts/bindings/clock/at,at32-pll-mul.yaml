@@ -1,0 +1,41 @@
+# Copyright (c) 2021, Linaro ltd
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+
+  Takes one of 'clk_hext', 'clk_hext / 2' (when 'xtpre' is set) or 'clk_hsi / 2'
+  as input clock.
+
+  Output clock frequency can be computed with the following formula:
+
+    f(PLLCLK) = f(input clk) x PLLMUL  --> SYSCLK (System Clock)
+
+compatible: "at,at32-pll-mul"
+
+include: [clock-controller.yaml, base.yaml]
+
+properties:
+  "#clock-cells":
+    const: 0
+
+  clocks:
+    required: true
+
+  mul:
+    type: int
+    required: true
+    description: |
+        Main PLL multiplication factor for VCO
+        Valid range: 0 - 64
+
+  xtpre:
+    type: int
+    description: |
+        Optional HEXT divider for PLL entry
+
+  div_fu:
+    type: int
+    description: |
+        Optional PLL output divisor to generate a 48MHz USB clock.
+        When set, PLL clock is not divided.
+        Otherwise, PLL output clock is divided by 1.5.

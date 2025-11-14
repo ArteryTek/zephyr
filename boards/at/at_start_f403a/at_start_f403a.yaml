@@ -1,0 +1,13 @@
+identifier: at_start_f403a
+name: AT AT-START-F403A
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+  - gnuarmemb
+  - xtools
+supported:
+  - gpio
+ram: 96
+flash: 1024
+vendor: artery

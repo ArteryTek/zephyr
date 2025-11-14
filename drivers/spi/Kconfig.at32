@@ -5,6 +5,7 @@ config SPI_AT32
 	bool "AT32 SPI driver"
 	default y
 	depends on DT_HAS_AT_AT32_SPI_ENABLED
+	select PINCTRL
 	select USE_AT32_SPI
 	help
 	  Enables AT32 SPI driver.

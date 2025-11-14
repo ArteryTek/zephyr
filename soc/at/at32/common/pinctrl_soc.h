@@ -15,7 +15,7 @@
 #include <zephyr/devicetree.h>
 #include <zephyr/types.h>
 
-#include <dt-bindings/pinctrl/at32_iomux.h>
+//#include <dt-bindings/pinctrl/at32_iomux.h>
 
 #ifdef __cplusplus
 extern "C" {

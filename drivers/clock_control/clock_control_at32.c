@@ -43,6 +43,33 @@ struct clock_control_at32_config {
 	uint32_t base;
 };
 
+#if defined(FLASH_WAIT_CYCLE)
+static int clock_wait_cycle_config(void)
+{
+#if CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC > 192000000
+	if (CPU_FREQ > 192000000) {
+		flash_psr_set(FLASH_WAIT_CYCLE_6);
+	} else 
+#endif
+#if CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC > 160000000
+	if (CPU_FREQ > 160000000) {
+		flash_psr_set(FLASH_WAIT_CYCLE_5);
+	} else 
+#endif
+	if (CPU_FREQ > 128000000) {
+		flash_psr_set(FLASH_WAIT_CYCLE_4);
+	} else if (CPU_FREQ > 96000000) {
+		flash_psr_set(FLASH_WAIT_CYCLE_3);
+	} else if (CPU_FREQ > 64000000) {
+		flash_psr_set(FLASH_WAIT_CYCLE_2);
+	} else {
+		flash_psr_set(FLASH_WAIT_CYCLE_1);
+	}
+
+	return 0;
+}
+#endif
+
 static int clock_control_at32_on(const struct device *dev,
 				 clock_control_subsys_t sys)
 {
@@ -50,7 +77,7 @@ static int clock_control_at32_on(const struct device *dev,
 	uint16_t id = *(uint16_t *)sys;
 
 	sys_set_bit(config->base + AT32_CLOCK_ID_OFFSET(id),
-		    AT32_CLOCK_ID_BIT(id));
+			AT32_CLOCK_ID_BIT(id));
 
 	return 0;
 }
@@ -62,7 +89,7 @@ static int clock_control_at32_off(const struct device *dev,
 	uint16_t id = *(uint16_t *)sys;
 
 	sys_clear_bit(config->base + AT32_CLOCK_ID_OFFSET(id),
-		      AT32_CLOCK_ID_BIT(id));
+				AT32_CLOCK_ID_BIT(id));
 
 	return 0;
 }
@@ -80,8 +107,12 @@ static int clock_control_at32_get_rate(const struct device *dev,
 
 	switch (AT32_CLOCK_ID_OFFSET(id)) {
 	case CRM_AHB1EN_OFFSET:
+#if defined (CRM_AHB2EN_OFFSET)
 	case CRM_AHB2EN_OFFSET:
+#endif
+#if defined (CRM_AHB3EN_OFFSET)
 	case CRM_AHB3EN_OFFSET:
+#endif
 		psc = (cfg & CRM_CFG_AHBDIV_MSK) >> CRM_CFG_AHBDIV_POS;
 		*rate = CPU_FREQ >> ahb_exp[psc];
 		break;
@@ -138,52 +169,50 @@ int at32_clock_control_init(const struct device *dev)
 {
 	int clk_div = 0;
 	/* set hick as system clock */
-    crm_sysclk_switch(CRM_SCLK_HICK);
+	crm_sysclk_switch(CRM_SCLK_HICK);
 
-    /* wait till pll is used as system clock source */
-    while(crm_sysclk_switch_status_get() != CRM_SCLK_HICK){
+	/* wait till pll is used as system clock source */
+	while(crm_sysclk_switch_status_get() != CRM_SCLK_HICK) {
     }
 	
 	crm_periph_clock_enable(CRM_PWC_PERIPH_CLOCK, TRUE);
 #if defined(PWC_LDO_OUTPUT)
-    pwc_ldo_output_voltage_set(PWC_LDO_OUTPUT_MAX);
+	pwc_ldo_output_voltage_set(PWC_LDO_OUTPUT_MAX);
 #endif
 	/* disable pll */
-    crm_clock_source_enable(CRM_CLOCK_SOURCE_PLL, FALSE);
+	crm_clock_source_enable(CRM_CLOCK_SOURCE_PLL, FALSE);
 #if defined(FLASH_WAIT_CYCLE)
-#if CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC > 192000000
-    if(CPU_FREQ > 192000000){
-        flash_psr_set(FLASH_WAIT_CYCLE_6);	
+	clock_wait_cycle_config();
+#endif
+
+#if defined(FLASH_FDIV)
+	if(CPU_FREQ > 200000000) {
+		flash_clock_divider_set(FLASH_CLOCK_DIV_3);
 	}
-	else
-#endif 
-#if CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC > 160000000
-	if(CPU_FREQ > 160000000){
-        flash_psr_set(FLASH_WAIT_CYCLE_5);	
-	}
-	else
-#endif 
-    if(CPU_FREQ > 128000000){
-        flash_psr_set(FLASH_WAIT_CYCLE_4);	
-	}
-	else if(CPU_FREQ > 96000000){
-        flash_psr_set(FLASH_WAIT_CYCLE_3);	
-	}
-	else if(CPU_FREQ > 64000000){
-        flash_psr_set(FLASH_WAIT_CYCLE_2);	
-	}
-	else{
-        flash_psr_set(FLASH_WAIT_CYCLE_1);	
+	else {
+		flash_clock_divider_set(FLASH_CLOCK_DIV_2);
 	}
 #endif
-    if (IS_ENABLED(AT32_HEXT_ENABLED)){
-        crm_clock_source_enable(CRM_CLOCK_SOURCE_HEXT, TRUE);
 
-        /* wait till hext is ready */
-        while(crm_hext_stable_wait() == ERROR){
-        }
-    }
+	if (IS_ENABLED(AT32_HEXT_ENABLED)){
+		crm_clock_source_enable(CRM_CLOCK_SOURCE_HEXT, TRUE);
+
+		/* wait till hext is ready */
+		while(crm_hext_stable_wait() == ERROR) {
+		}
+	}
+
     if(IS_ENABLED(AT32_SYSCLK_SRC_PLL)){
+#if DT_NODE_HAS_PROP(DT_NODELABEL(pll), mul)
+		if(IS_ENABLED(AT32_PLL_SRC_HEXT)){
+			crm_pll_config(DT_PROP(DT_NODELABEL(pll), xtpre)+1, 
+				DT_PROP(DT_NODELABEL(pll), mul),1);
+		}
+		else if(IS_ENABLED(AT32_PLL_SRC_HICK)){
+			crm_pll_config(CRM_PLL_SOURCE_HICK, 
+				DT_PROP(DT_NODELABEL(pll), mul),1);
+		}
+#else
 		/* config pll clock resource */
 		if(IS_ENABLED(AT32_PLL_SRC_HEXT)){
 			crm_pll_config(CRM_PLL_SOURCE_HEXT, 
@@ -197,7 +226,8 @@ int at32_clock_control_init(const struct device *dev)
 				DT_PROP(DT_NODELABEL(pll), div_ms), 
 				DT_PROP(DT_NODELABEL(pll), div_fp));
 		}
-#if defined(CRM_PLL_FU)	
+#endif
+#if defined(CRM_PLL_FU)
 		crm_pllu_div_set(DT_PROP(DT_NODELABEL(pll), div_fu));
 		crm_pllu_output_set(TRUE);
 #endif

@@ -95,6 +95,11 @@
 	status = "okay";
 };
 
+&sysclk {
+	clock-frequency = <DT_FREQ_M(144)>;
+	status = "okay";
+};
+
 &crm {
 	clocks = <&pll>;
 	ahb-prescaler = <1>;

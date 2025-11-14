@@ -12,6 +12,7 @@
 #include <zephyr/dt-bindings/dma/at32_dma.h>
 #include <zephyr/dt-bindings/clock/at32f402_405_clocks.h>
 #include <zephyr/dt-bindings/reset/at32f402_405_reset.h>
+#include <freq.h>
 
 / {
 	cpus {
@@ -58,6 +59,13 @@
 		pll: pll {
 			#clock-cells = <0>;
 			compatible = "at,at32-pll";
+			status = "disabled";
+		};
+
+		sysclk: sysclk {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <DT_FREQ_M(216)>;
 			status = "disabled";
 		};
 	};

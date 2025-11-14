@@ -4,7 +4,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 #define DT_DRV_COMPAT at_at32_gpio
 
 #include <zephyr/drivers/clock_control.h>
@@ -15,10 +14,14 @@
 #include <zephyr/drivers/reset.h>
 #include <pinctrl_soc.h>
 
+#include <at32_gpio.h>
 #include <soc.h>
 
-/** SYSCFG DT node */
+#if DT_NODE_HAS_PROP(DT_NODELABEL(syscfg), reg)
 #define SYSCFG_NODE DT_NODELABEL(syscfg)
+#else
+#define SYSCFG_NODE DT_NODELABEL(iomux)
+#endif
 
 /** EXINT mask */
 #define EXINT_MSK	       0xFU
@@ -91,15 +94,16 @@ static inline int gpio_at32_configure(const struct device *port, gpio_pin_t pin,
 
 	if ((flags & GPIO_OUTPUT) != 0U) {
 		init_config.gpio_mode = GPIO_MODE_OUTPUT;
-	  if ((flags & GPIO_SINGLE_ENDED) != 0U) {
-		  if ((flags & GPIO_LINE_OPEN_DRAIN) != 0U) {
-			init_config.gpio_out_type = GPIO_OUTPUT_OPEN_DRAIN;
+		init_config.gpio_drive_strength = GPIO_DRIVE_STRENGTH_STRONGER;
+		if ((flags & GPIO_SINGLE_ENDED) != 0U) {
+			if ((flags & GPIO_LINE_OPEN_DRAIN) != 0U) {
+				init_config.gpio_out_type = GPIO_OUTPUT_OPEN_DRAIN;
 			} else {
 				return -ENOTSUP;
-	    }
-	  } else {
+		}
+	} else {
 		init_config.gpio_out_type = GPIO_OUTPUT_PUSH_PULL;
-	  }
+	}
 	} else if ((flags & GPIO_INPUT) != 0U) {
 		init_config.gpio_mode = GPIO_MODE_INPUT;
 	} else {
@@ -113,7 +117,7 @@ static inline int gpio_at32_configure(const struct device *port, gpio_pin_t pin,
 	} else {
 		init_config.gpio_pull = AT32_PULL_NONE;
 	}
-    
+
 	gpio_init(gpio, &init_config);
 	return 0;
 }
@@ -155,7 +159,7 @@ static int gpio_at32_port_toggle_bits(const struct device *port, gpio_port_pins_
 {
 	const struct gpio_at32_config *config = port->config;
 	gpio_type *gpio = (gpio_type *)config->reg;
-    gpio->odt ^= pins;
+	gpio->odt ^= pins;
 	return 0;
 }
 
@@ -175,19 +179,19 @@ static int gpio_at32_pin_interrupt_configure(const struct device *port, gpio_pin
 		}
 
 		switch (trig) {
-		case GPIO_INT_TRIG_LOW:
-			at32_exint_intc_select_line_trigger(BIT(pin), AT32_GPIO_IRQ_TRIG_FALLING);
-			break;
-		case GPIO_INT_TRIG_HIGH:
-			at32_exint_intc_select_line_trigger(BIT(pin), AT32_GPIO_IRQ_TRIG_RISING);
-			break;
-		case GPIO_INT_TRIG_BOTH:
-			at32_exint_intc_select_line_trigger(BIT(pin), AT32_GPIO_IRQ_TRIG_BOTH);
-			break;
-		default:
-			return -ENOTSUP;
+			case GPIO_INT_TRIG_LOW:
+				at32_exint_intc_select_line_trigger(BIT(pin), AT32_GPIO_IRQ_TRIG_FALLING);
+				break;
+			case GPIO_INT_TRIG_HIGH:
+				at32_exint_intc_select_line_trigger(BIT(pin), AT32_GPIO_IRQ_TRIG_RISING);
+				break;
+			case GPIO_INT_TRIG_BOTH:
+				at32_exint_intc_select_line_trigger(BIT(pin), AT32_GPIO_IRQ_TRIG_BOTH);
+				break;
+			default:
+				return -ENOTSUP;
 		}
-    at32_exint_intc_enable_line(BIT(pin));
+		at32_exint_intc_enable_line(BIT(pin));
 	} else {
 		return -ENOTSUP;
 	}
@@ -217,9 +221,11 @@ static int gpio_at32_init(const struct device *port)
 	const struct gpio_at32_config *config = port->config;
 	
 	(void)clock_control_on(AT32_CLOCK_CONTROLLER, (clock_control_subsys_t *)&config->clkid);
+	if(config->clkid_exint != 0) {
+		(void)clock_control_on(AT32_CLOCK_CONTROLLER,
+			(clock_control_subsys_t *)&config->clkid_exint);
+	}
 
-	(void)clock_control_on(AT32_CLOCK_CONTROLLER,
-			       (clock_control_subsys_t *)&config->clkid_exint);
 	return 0;
 }
 

@@ -8,3 +8,11 @@ config PINCTRL_AT32_MUX
 	help
 	  AT32 MUX pin controller driver. This driver is used by series using the
 	  AF pin multiplexing model.
+
+config PINCTRL_AT32_IOMAP
+	bool "AT32 gpio map pin controller driver"
+	default y
+	depends on DT_HAS_AT_AT32_PINCTRL_IOMAP_ENABLED
+	help
+	  AT32 iomap pin controller driver. This driver is used by series using the
+	  iomap pin multiplexing model.
