@@ -1,0 +1,167 @@
+/*
+ * Copyright (c) 2025 Maxjta
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+#include <at/at32f402_405/at32f405rct7.dtsi>
+#include "at_start_f405-pinctrl.dtsi"
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+
+/ {
+	model = "AT AT-START-F405 board";
+	compatible = "at,at_start_f405";
+
+	chosen {
+		zephyr,console = &usart1;
+		zephyr,shell-uart = &usart1;
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+	};
+
+	leds: leds {
+		compatible = "gpio-leds";
+		red_led: led2 {
+			gpios = <&gpiof 4 GPIO_ACTIVE_HIGH>;
+			label = "User LED2";
+		};
+		yellow_led: led3 {
+			gpios = <&gpiof 5 GPIO_ACTIVE_HIGH>;
+			label = "User LED3";
+		};
+		green_led: led4 {
+			gpios = <&gpiof 6 GPIO_ACTIVE_HIGH>;
+			label = "User LED4";
+		};
+	};
+
+	gpio_keys {
+		compatible = "gpio-keys";
+		user_button: button {
+			label = "User";
+			gpios = <&gpioa 0 GPIO_ACTIVE_HIGH>;
+			zephyr,code = <INPUT_KEY_0>;
+		};
+	};
+
+	aliases {
+		led0 = &red_led;
+		led1 = &yellow_led;
+		led2 = &green_led;
+		sw0 = &user_button;
+		watchdog0 = &wdt;
+	};
+};
+
+&gpioa {
+    status = "okay";
+};
+
+&gpiob {
+    status = "okay";
+};
+
+&gpioc {
+    status = "okay";
+};
+
+&gpiod {
+    status = "okay";
+};
+
+&gpiof {
+    status = "okay";
+};
+
+&clk_lick {
+	status = "okay";
+};
+
+&clk_hext {
+	clock-frequency = <12000000>;
+	status = "okay";
+};
+
+&pll {
+	div-ms = <1>;
+	mul-ns = <72>;
+	div-fp = <2>;
+	div-fu = <5>;
+	clocks = <&clk_hext>;
+	status = "okay";
+};
+
+&sysclk {
+	clock-frequency = <DT_FREQ_M(216)>;
+	status = "okay";
+};
+
+&crm {
+	clocks = <&pll>;
+	ahb-prescaler = <1>;
+	clock-frequency = <216000000>;
+	apb1-prescaler = <2>;
+	apb2-prescaler = <1>;
+	status = "okay";
+};
+
+&usbotg_hs {
+    status = "okay";
+};
+
+&usart1 {
+	pinctrl-0 = <&usart1_default>;
+	pinctrl-names = "default";
+	current-speed = <115200>;
+	status = "okay";
+};
+
+&spi1 {
+	status = "okay";
+	pinctrl-0 = <&spi1_default>;
+	pinctrl-names = "default";
+	cs-gpios = <&gpioa 4 GPIO_ACTIVE_LOW>;
+	dmas = <&dma1 1 10 1 0>, <&dma1 2 11 2 0>;
+	dma-names = "rx", "tx";
+};
+
+&i2c1 {
+    status = "okay";
+	clock-frequency = <I2C_BITRATE_STANDARD>;
+	pinctrl-0 = <&i2c1_default>;
+	pinctrl-names = "default";
+};
+
+&timer2 {
+    status = "okay";
+	at,prescaler = <9999>;
+	
+	pwm1: pwm {
+		status = "okay";
+		pinctrl-0 = <&pwm1_default>;
+		pinctrl-names = "default";
+	};
+};
+
+&dma1 {
+    status = "okay";
+};
+
+&can1 {
+	pinctrl-0 = <&can1_default>;
+	pinctrl-names = "default";
+    status = "okay";
+};
+
+&adc1 {
+	pinctrl-0 = <&adc1_default>;
+	pinctrl-names = "default";
+	at,adc-clock-source = "SYNC";
+	at,adc-prescaler = <15>;
+	status = "okay";
+	dmas = <&dma1 3 5 (AT32_DMA_PERIPH_TO_MEMORY|AT32_DMA_NO_PERIPH_ADDR_INC| 
+	                  AT32_DMA_MEMORY_ADDR_INC|AT32_DMA_PERIPH_WIDTH_16BIT|
+					  AT32_DMA_MEMORY_WIDTH_16BIT|AT32_DMA_PRIORITY_HIGH) 0>;
+	dma-names = "rx";
+};

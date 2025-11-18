@@ -1,0 +1,35 @@
+/*
+ * Copyright (c) 2025, Maxjta
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <dt-bindings/pinctrl/at32f423v(c)xx-pinctrl.h>
+
+&pinctrl {
+	usart1_default: usart1_default {
+		group1 {
+			pinmux = <USART1_TX_PA9>, <USART1_RX_PA10>;
+		};
+	};
+	spi1_default: spi1_default {
+		group1 {
+			pinmux = <SPI1_SCK_PA5>, <SPI1_MOSI_PA7>,
+				 <SPI1_MISO_PA6>;
+		};
+	};
+	i2c1_default: i2c1_default {
+		group1 {
+			pinmux = <I2C1_SCL_PB8>, <I2C1_SDA_PB9>;
+		};
+	};
+	pwm1_default: pwm1_default {
+		group1 {
+			pinmux = <TMR2_CH2_PB3>;
+		};
+	};
+	adc1_default: adc1_default {
+		group1 {
+			pinmux = <ADC1_IN0_PA0>, <ADC1_IN1_PA1>, <ADC1_IN2_PA2>;
+		};
+	};
+};

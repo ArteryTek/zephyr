@@ -1,0 +1,24 @@
+/*
+ * Copyright (c) 2022, Teslabs Engineering S.L.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#ifndef SOC_ARM_ARTERY_AT32F423_AT32_REGS_H_
+#define SOC_ARM_ARTERY_AT32F423_AT32_REGS_H_
+
+#include <zephyr/sys/util_macro.h>
+
+/* CRM */
+#define CRM_CFG_OFFSET	  0x04U
+#define CRM_AHB1EN_OFFSET 0x14U
+#define CRM_APB1EN_OFFSET 0x1CU
+#define CRM_APB2EN_OFFSET 0x18U
+
+#define CRM_CFG_AHBDIV_POS  4U
+#define CRM_CFG_AHBDIV_MSK  (BIT_MASK(4) << CRM_CFG_AHBDIV_POS)
+#define CRM_CFG_APB1DIV_POS 10U
+#define CRM_CFG_APB1DIV_MSK (BIT_MASK(3) << CRM_CFG_APB1DIV_POS)
+#define CRM_CFG_APB2DIV_POS 13U
+#define CRM_CFG_APB2DIV_MSK (BIT_MASK(3) << CRM_CFG_APB2DIV_POS)
+
+#endif /* SOC_ARM_ARTERY_AT32F403A_407_AT32_REGS_H_ */

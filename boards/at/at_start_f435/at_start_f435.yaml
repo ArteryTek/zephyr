@@ -1,0 +1,13 @@
+identifier: at_start_f435
+name: AT AT-START-F435
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+  - gnuarmemb
+  - xtools
+supported:
+  - gpio
+ram: 384
+flash: 4032
+vendor: artery

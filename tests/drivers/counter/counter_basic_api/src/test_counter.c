@@ -117,6 +117,9 @@ static const struct device *const devices[] = {
 #ifdef CONFIG_COUNTER_TIMER_GD32
 	DEVS_FOR_DT_COMPAT(gd_gd32_timer)
 #endif
+#ifdef CONFIG_COUNTER_TIMER_AT32
+	DEVS_FOR_DT_COMPAT(at_at32_timer)
+#endif
 #ifdef CONFIG_COUNTER_TIMER_RPI_PICO
 	DEVS_FOR_DT_COMPAT(raspberrypi_pico_timer)
 #endif
@@ -1120,6 +1123,11 @@ static bool reliable_cancel_capable(const struct device *dev)
 	}
 #endif
 #ifdef CONFIG_COUNTER_TIMER_GD32
+	if (single_channel_alarm_capable(dev)) {
+		return true;
+	}
+#endif
+#ifdef CONFIG_COUNTER_TIMER_AT32
 	if (single_channel_alarm_capable(dev)) {
 		return true;
 	}

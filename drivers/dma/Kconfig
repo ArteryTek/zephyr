@@ -27,6 +27,7 @@ module-str = dma
 source "subsys/logging/Kconfig.template.log_config"
 
 # zephyr-keep-sorted-start
+source "drivers/dma/Kconfig.at32"
 source "drivers/dma/Kconfig.andes_atcdmacx00"
 source "drivers/dma/Kconfig.bflb"
 source "drivers/dma/Kconfig.dma_pl330"

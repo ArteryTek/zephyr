@@ -29,6 +29,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/ztest.h>
 
+
 #if DT_NODE_HAS_STATUS_OKAY(DT_ALIAS(pwm_test))
 #define PWM_DEV_NODE DT_ALIAS(pwm_test)
 #else
