@@ -31,7 +31,7 @@
 #include <zephyr/irq.h>
 LOG_MODULE_REGISTER(usb_dc_at32);
 
-#if DT_HAS_COMPAT_STATUS_OKAY(at_at32_otgfs) && DT_HAS_COMPAT_STATUS_OKAY(at_at32_otghs) && DT_HAS_COMPAT_STATUS_OKAY(at_at32_usbfs)
+#if DT_HAS_COMPAT_STATUS_OKAY(at_at32_otgfs) && DT_HAS_COMPAT_STATUS_OKAY(at_at32_otghs) && DT_HAS_COMPAT_STATUS_OKAY(at_at32_usb)
 #error "Only one interface should be enabled at a time, OTG FS or OTG HS"
 #endif
 
@@ -39,17 +39,21 @@ LOG_MODULE_REGISTER(usb_dc_at32);
 #define DT_DRV_COMPAT    at_at32_otghs
 #elif DT_HAS_COMPAT_STATUS_OKAY(at_at32_otgfs)
 #define DT_DRV_COMPAT    at_at32_otgfs
-#elif DT_HAS_COMPAT_STATUS_OKAY(at_at32_usbfs)
-#define DT_DRV_COMPAT    at_at32_usbfs
+#elif DT_HAS_COMPAT_STATUS_OKAY(at_at32_usb)
+#define DT_DRV_COMPAT    at_at32_usb
 #endif
 
 #define USB_BASE_ADDRESS	      DT_INST_REG_ADDR(0)
 #define USB_IRQ			            DT_INST_IRQN(0)
 #define USB_IRQ_PRI		          DT_INST_IRQ(0, priority)
+#if DT_HAS_COMPAT_STATUS_OKAY(at_at32_usb)
+#define USB_NUM_BIDIR_ENDPOINTS 8
+#else
 #define USB_NUM_BIDIR_ENDPOINTS	DT_INST_PROP(0, num_in_eps)
+#endif
 #define USB_RAM_SIZE		DT_INST_PROP(0, ram_size)
 
-#if defined(USB)
+#if DT_HAS_COMPAT_STATUS_OKAY(at_at32_usb)
 
 #define EP0_MPS 64U
 #define EP_MPS 64U
@@ -176,11 +180,9 @@ static int usb_dc_at32_init(void)
 	uint8_t status;
 	unsigned int i;
 
-#if defined(USB)
+#if DT_HAS_COMPAT_STATUS_OKAY(at_at32_usb)
 	usb_dc_at32_state.pcd.usb_reg = (usb_reg_type *)DT_INST_REG_ADDR(0);
 	usb_dc_at32_state.pcd.udc_config.speed = USB_FULL_SPEED;
-	usb_dc_at32_state.pcd.udc_config.dev_endpoints = USB_NUM_BIDIR_ENDPOINTS;
-	usb_dc_at32_state.pcd.udc_config.ep0_mps = USB_EPT0_MPS_64;
 #else
 #if DT_HAS_COMPAT_STATUS_OKAY(at_at32_otghs)
 	usb_dc_at32_state.pcd.usb_reg = (usb_reg_type *)DT_INST_REG_ADDR(0);
@@ -197,7 +199,10 @@ static int usb_dc_at32_init(void)
 #else
   usb_dc_at32_state.pcd.udc_config.sof_en = 0;
 #endif /* CONFIG_USB_DEVICE_SOF */
-
+#if defined(USB)
+	/* Start PMA configuration for the endpoints after the BTABLE. */
+	usb_dc_at32_state.pma_offset = USB_BTABLE_SIZE;
+#endif
 	LOG_DBG("hal_udc_init");
 	status = hal_udc_init(&usb_dc_at32_state.pcd);
 	if (status != 0) {
@@ -225,9 +230,6 @@ static int usb_dc_at32_init(void)
 	usb_dc_at32_state.in_ep_state[EP0_IDX].ep_type = EPT_CONTROL_TYPE;
 
 #if defined(USB)
-	/* Start PMA configuration for the endpoints after the BTABLE. */
-	usb_dc_at32_state.pma_offset = USB_BTABLE_SIZE;
-
 	for (i = 0U; i < USB_NUM_BIDIR_ENDPOINTS; i++) {
 		k_sem_init(&usb_dc_at32_state.in_ep_state[i].write_sem, 1, 1);
 	}
@@ -397,13 +399,13 @@ int usb_dc_ep_configure(const struct usb_dc_ep_cfg_data * const ep_cfg)
 		}
 
 		if (ep_cfg->ep_type == USB_DC_EP_ISOCHRONOUS) {
-			hal_udc_ep_config(&usb_dc_at32_state.pcd, ep, PCD_DBL_BUF,
+			hal_udc_ep_config(&usb_dc_at32_state.pcd, ep, 1,
 				usb_dc_at32_state.pma_offset +
 				((usb_dc_at32_state.pma_offset + ep_cfg->ep_mps) << 16));
 			ep_state->ep_pma_buf_len = ep_cfg->ep_mps*2;
 			usb_dc_at32_state.pma_offset += ep_cfg->ep_mps*2;
 		} else {
-			hal_udc_ep_config(&usb_dc_at32_state.pcd, ep, PCD_SNG_BUF,
+			hal_udc_ep_config(&usb_dc_at32_state.pcd, ep, 0,
 				usb_dc_at32_state.pma_offset);
 			ep_state->ep_pma_buf_len = ep_cfg->ep_mps;
 			usb_dc_at32_state.pma_offset += ep_cfg->ep_mps;
