@@ -249,7 +249,7 @@
 			reg = <0x40007800 0x400>;
 			interrupts = <82 0>;
 			clocks = <&cctl AT32_CLOCK_UART7>;
-            resets = <&rctl AT32_RESET_UART7>;
+			resets = <&rctl AT32_RESET_UART7>;
 			status = "disabled";
 		};
 
@@ -263,30 +263,28 @@
 		};
     
         usbotg_hs: usb@40040000 {
-			compatible = "at,at32-otghs";
+			compatible = "at,at32-otg-dwc2","snps,dwc2";
 			reg = <0x40040000 0x40000>;
 			interrupts = <77 0>;
-            num-in-eps = <8>;
-            num-out-eps = <8>;
-            ram-size = <4096>;
-            ghwcfg1 = <0>;
-            ghwcfg2 = <0>;
-            ghwcfg4 = <0>;
-            clocks = <&cctl AT32_CLOCK_USBHS>;
+			num-in-eps = <8>;
+			num-out-eps = <8>;
+			ghwcfg1 = <0>;
+			ghwcfg2 = <0x229FDDD0>;
+			ghwcfg4 = <0x1FF0A020>;
+			clocks = <&cctl AT32_CLOCK_USBHS>;
 			status = "disabled";
 		};
     
-        usbotg_fs: usb@50000000 {
-			compatible = "at,at32-otgfs";
+		usbotg_fs: usb@50000000 {
+			compatible = "at,at32-otg-dwc2","snps,dwc2";
 			reg = <0x50000000 0x40000>;
 			interrupts = <67 0>;
-            num-in-eps = <8>;
-            num-out-eps = <8>;
-            ram-size = <1280>;
-            ghwcfg1 = <0>;
-            ghwcfg2 = <0>;
-            ghwcfg4 = <0>;
-            clocks = <&cctl AT32_CLOCK_USBFS>;
+			num-in-eps = <8>;
+			num-out-eps = <8>;
+			ghwcfg1 = <0>;
+			ghwcfg2 = <0x228FDD00>;
+			ghwcfg4 = <0x1FF0A020>;
+			clocks = <&cctl AT32_CLOCK_USBFS>;
 			status = "disabled";
 		};
     
