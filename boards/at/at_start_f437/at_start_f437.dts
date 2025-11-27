@@ -109,8 +109,10 @@
 	status = "okay";
 };
 
-&usbotg_fs {
-    status = "okay";
+zephyr_udc0: &usbotg_fs {
+	pinctrl-0 = <&otgfs_default>;
+	pinctrl-names = "default";
+	status = "okay";
 };
 
 &usart1 {

@@ -715,6 +715,89 @@ DT_INST_FOREACH_STATUS_OKAY(QUIRK_ESP32_USB_OTG_DEFINE)
 
 #endif /*DT_HAS_COMPAT_STATUS_OKAY(espressif_esp32_usb_otg) */
 
+#if DT_HAS_COMPAT_STATUS_OKAY(at_at32_otg_dwc2)
+
+#include <zephyr/sys/sys_io.h>
+#include <zephyr/drivers/clock_control.h>
+#include <zephyr/drivers/clock_control/at32_clock_control.h>
+#include <usb_dwc2_hw.h>
+
+struct usb_dw_at32_clk {
+	uint16_t clkid;
+};
+
+static inline int at32_usb_otg_enable_clk(const struct usb_dw_at32_clk *clk)
+{
+	(void)clock_control_on(AT32_CLOCK_CONTROLLER,
+		(clock_control_subsys_t)&clk->clkid);
+	return 0;
+}
+
+static inline int at32_usb_otg_enable_phy(const struct device *dev)
+{
+	const struct udc_dwc2_config *const config = dev->config;
+	mem_addr_t ggpio_reg = (mem_addr_t)&config->base->ggpio;
+	uint32_t ghwcfg2;
+
+	ghwcfg2 = sys_read32((mem_addr_t)&config->base->ghwcfg2);
+
+	if (usb_dwc2_get_ghwcfg2_hsphytype(ghwcfg2) ==
+		USB_DWC2_GHWCFG2_HSPHYTYPE_UTMIPLUSULPI) {
+		sys_clear_bits((mem_addr_t)&config->base->gusbcfg,
+						USB_DWC2_GUSBCFG_ULPI_UTMI_SEL_ULPI);
+	}
+
+	sys_set_bits(ggpio_reg, USB_DWC2_GGPIO_STM32_PWRDWN | USB_DWC2_GGPIO_STM32_VBDEN);
+
+	return 0;
+}
+
+static inline int at32_usb_otg_disable_phy(const struct device *dev)
+{
+	const struct udc_dwc2_config *const config = dev->config;
+	mem_addr_t ggpio_reg = (mem_addr_t)&config->base->ggpio;
+
+	sys_clear_bits(ggpio_reg, USB_DWC2_GGPIO_STM32_PWRDWN | USB_DWC2_GGPIO_STM32_VBDEN);
+
+	return 0;
+}
+
+static inline int at32_usb_init_caps(const struct device *dev)
+{
+	const struct udc_dwc2_config *const config = dev->config;
+	struct udc_data *data = dev->data;
+
+	if (usb_dwc2_get_ghwcfg2_hsphytype(config->ghwcfg2) != 0) {
+		data->caps.hs = true;
+	}
+
+	return 0;
+}
+
+#define QUIRK_AT32_OTG_DWC2_DEFINE(n)						\
+	static const struct usb_dw_at32_clk at32_clk_##n = {		\
+		.clkid = DT_INST_CLOCKS_CELL(n, id),						\
+	};									\
+										\
+	static int at32_usb_otg_enable_clk_##n(const struct device *dev)	\
+	{									\
+		return at32_usb_otg_enable_clk(&at32_clk_##n);		\
+	}									\
+										\
+	const struct dwc2_vendor_quirks dwc2_vendor_quirks_##n = {		\
+		.pre_enable = at32_usb_otg_enable_clk_##n,			\
+		.post_enable = at32_usb_otg_enable_phy,			\
+		.disable = at32_usb_otg_disable_phy,				\
+		.caps = at32_usb_init_caps,					\
+		.irq_clear = NULL,						\
+	};
+
+
+DT_INST_FOREACH_STATUS_OKAY(QUIRK_AT32_OTG_DWC2_DEFINE)
+
+#endif /*DT_HAS_COMPAT_STATUS_OKAY(at_at32_OTG_DWC2) */
+
+
 /* Add next vendor quirks definition above this line */
 
 #endif /* ZEPHYR_DRIVERS_USB_UDC_DWC2_VENDOR_QUIRKS_H */

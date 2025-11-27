@@ -1,0 +1,41 @@
+# Copyright (c) 2023 Linaro Limited
+# SPDX-License-Identifier: Apache-2.0
+
+config UDC_AT32
+	bool "AT32 USB device controller driver"
+	default y
+	depends on DT_HAS_AT_AT32_USB_ENABLED
+	select USE_AT32_USB
+	help
+	  AT32 USB device controller driver.
+
+if UDC_AT32
+
+config UDC_AT32_STACK_SIZE
+	int "UDC controller driver internal thread stack size"
+	default 512
+	help
+	  AT32 USB device controller driver internal thread stack size.
+
+config UDC_AT32_THREAD_PRIORITY
+	int "AT32 USB controller driver thread priority"
+	default 8
+	help
+	  AT32 USB device controller driver thread priority.
+
+config UDC_AT32_MAX_QMESSAGES
+	int "AT32 UDC driver maximum number of ISR event messages"
+	range 4 64
+	default 8
+	help
+	  Maximum number of messages for handling of STM32 USBD ISR events.
+
+config UDC_AT32_CLOCK_CHECK
+	bool "Runtime USB 48MHz clock check"
+	default y
+	help
+	  Enable USB clock 48MHz configuration runtime check.
+	  In specific cases, this check might provide wrong verdict and should
+	  be disabled.
+
+endif

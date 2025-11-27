@@ -106,8 +106,10 @@
 	status = "okay";
 };
 
-&usbotg_hs {
-    status = "okay";
+zephyr_udc0: &usbotg_hs {
+	pinctrl-0 = <&otghs_default>;
+	pinctrl-names = "default";
+	status = "okay";
 };
 
 &usart1 {

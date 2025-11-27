@@ -108,6 +108,10 @@
     status = "okay";
 };
 
+zephyr_udc0: &usb_fs {
+	status = "okay";
+};
+
 &usart1 {
 	pinctrl-0 = <&usart1_default>;
 	pinctrl-names = "default";
