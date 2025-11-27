@@ -26,7 +26,7 @@ manifest:
     - name: ArteryTek
       url-base: https://github.com/ArteryTek
 
-  group-filter: [-babblesim, -optional]
+  group-filter: [-babblesim, -optional, -testing]
 
   #
   # Please add items below based on alphabetical order
@@ -173,7 +173,7 @@ manifest:
         - hal
     - name: hal_bouffalolab
       path: modules/hal/bouffalolab
-      revision: 89df8327276755b5935dc4cc2f2f68e27a8dba3d
+      revision: 4d6677b8323a0f95302cc8098f7279c9ae30369b
       groups:
         - hal
     - name: hal_espressif
@@ -243,7 +243,7 @@ manifest:
       groups:
         - hal
     - name: hal_sifli
-      revision: 7be421088b6fa2910917f3f8b656ded01e21b4e8
+      revision: faf0646bde76333644b9ec8ca156dd2affe1a9cf
       path: modules/hal/sifli
       groups:
         - hal
@@ -294,7 +294,7 @@ manifest:
         - hal
     - name: hostap
       path: modules/lib/hostap
-      revision: 6086dea5ee7406e1eede7f2ca6dff1b00b0f04e2
+      revision: 51698b0f5fdac2778484f565d4591fcb1dd92bc4
     - name: liblc3
       revision: 48bbd3eacd36e99a57317a0a4867002e0b09e183
       path: modules/lib/liblc3
@@ -366,11 +366,22 @@ manifest:
     - name: picolibc
       path: modules/lib/picolibc
       revision: ca8b6ebba5226a75545e57a140443168a26ba664
+    - name: psa-arch-tests
+      revision: 87b08682a111ebb085cd8b1ea41d603191d6d146
+      path: modules/tee/tf-m/psa-arch-tests
+      groups:
+        - testing
+        - tee
     - name: segger
       revision: 9f08435a79d41133d7046b7c59d1b25929eda450
       path: modules/debug/segger
       groups:
         - debug
+    - name: tf-m-tests
+      revision: a90702bcb8fadb6f70daf0ffbb13888dfe63fc99
+      path: modules/tee/tf-m/tf-m-tests
+      groups:
+        - testing
     - name: trusted-firmware-a
       revision: 0a29cac8fe0f7bdb835b469d9ea11b8e17377a92
       path: modules/tee/tf-a/trusted-firmware-a
