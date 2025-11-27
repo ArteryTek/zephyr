@@ -38,11 +38,13 @@
 			pinmux = <ADC1_IN0_PA0>, <ADC1_IN1_PA1>, <ADC1_IN2_PA2>;
 		};
 	};
+
 	otghs_default: otghs_default {
 		group1 {
 			pinmux = <OTG2_DM_PB14>, <OTG2_DP_PB15>;
 		};
 	};
+
 	otgfs_default: otgfs_default {
 		group1 {
 			pinmux = <OTG1_DM_PA11>, <OTG1_DP_PA12>;
