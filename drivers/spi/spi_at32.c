@@ -130,58 +130,54 @@ static int spi_at32_configure(const struct device *dev,
 		return 0;
 	}
 
-    spi_default_para_init(&spi_init_struct);
-    spi_enable(spix, FALSE);
+	spi_default_para_init(&spi_init_struct);
+	spi_enable(spix, FALSE);
 
-	if (SPI_MODE_GET(config->operation) & SPI_MODE_CPOL){		
+	if (SPI_MODE_GET(config->operation) & SPI_MODE_CPOL) {		
 		spi_init_struct.clock_polarity = SPI_CLOCK_POLARITY_HIGH;
 	} else {
-	    spi_init_struct.clock_polarity = SPI_CLOCK_POLARITY_LOW;
+		spi_init_struct.clock_polarity = SPI_CLOCK_POLARITY_LOW;
 	}
 
-    if (SPI_MODE_GET(config->operation) & SPI_MODE_CPHA){
-        spi_init_struct.clock_phase = SPI_CLOCK_PHASE_2EDGE;
-    }else{
-        spi_init_struct.clock_phase = SPI_CLOCK_PHASE_1EDGE;
-	}
-	if (SPI_WORD_SIZE_GET(config->operation) == 8) {
-        spi_init_struct.frame_bit_num = SPI_FRAME_8BIT;
+	if (SPI_MODE_GET(config->operation) & SPI_MODE_CPHA) {
+		spi_init_struct.clock_phase = SPI_CLOCK_PHASE_2EDGE;
 	} else {
-        spi_init_struct.frame_bit_num = SPI_FRAME_16BIT;
+		spi_init_struct.clock_phase = SPI_CLOCK_PHASE_1EDGE;
+	}
+
+	if (SPI_WORD_SIZE_GET(config->operation) == 8) {
+		spi_init_struct.frame_bit_num = SPI_FRAME_8BIT;
+	} else {
+		spi_init_struct.frame_bit_num = SPI_FRAME_16BIT;
 	}
 
 	spi_init_struct.transmission_mode = SPI_TRANSMIT_FULL_DUPLEX;
 
-    if (config->operation & SPI_TRANSFER_LSB){
-        spi_init_struct.first_bit_transmission = SPI_FIRST_BIT_LSB;
-    }else{
-        spi_init_struct.first_bit_transmission = SPI_FIRST_BIT_MSB;
+	if (config->operation & SPI_TRANSFER_LSB) {
+		spi_init_struct.first_bit_transmission = SPI_FIRST_BIT_LSB;
+	} else {
+		spi_init_struct.first_bit_transmission = SPI_FIRST_BIT_MSB;
 	}
 
-    if(spi_cs_is_gpio(config))
-    {
-        spi_init_struct.cs_mode_selection = SPI_CS_SOFTWARE_MODE;
-    }
-	else
-	{
-        spi_init_struct.cs_mode_selection = SPI_CS_HARDWARE_MODE;
+	if(spi_cs_is_gpio(config)) {
+		spi_init_struct.cs_mode_selection = SPI_CS_SOFTWARE_MODE;
+	} else {
+		spi_init_struct.cs_mode_selection = SPI_CS_HARDWARE_MODE;
 	}
-    if (config->operation & SPI_OP_MODE_SLAVE){
-        spi_init_struct.master_slave_mode = SPI_MODE_SLAVE;
-    }
-    else{
-        spi_init_struct.master_slave_mode = SPI_MODE_MASTER;
-    }
+
+	if (config->operation & SPI_OP_MODE_SLAVE) {
+		spi_init_struct.master_slave_mode = SPI_MODE_SLAVE;
+	} else {
+		spi_init_struct.master_slave_mode = SPI_MODE_MASTER;
+	}
 	(void)clock_control_get_rate(AT32_CLOCK_CONTROLLER,
 				     (clock_control_subsys_t)&cfg->clkid,
 				     &bus_freq);
 	bus_freq_div3 = bus_freq;
-	if((bus_freq_div3 / 3 + 1) <= config->frequency && ((bus_freq >> 1U)) > config->frequency)
-	{
+	if((bus_freq_div3 / 3 + 1) <= config->frequency && 
+		((bus_freq >> 1U)) > config->frequency) {
 		spi_init_struct.mclk_freq_division = 0xA;
-	}
-	else
-	{
+	} else {
 		for (uint8_t i = 0U; i <= AT32_SPI_PSC_MAX; i++) {
 			bus_freq = bus_freq >> 1U;
 			if (bus_freq <= config->frequency) {
@@ -189,8 +185,8 @@ static int spi_at32_configure(const struct device *dev,
 				break;
 			}
 		}
-    }
-    spi_init(spix, &spi_init_struct);
+	}
+	spi_init(spix, &spi_init_struct);
 	data->ctx.config = config;
 
 	return 0;
@@ -243,7 +239,7 @@ static int spi_at32_frame_exchange(const struct device *dev)
 			}
 			spi_context_update_rx(ctx, 2, 1);
 		}
-  }
+	}
 
 	return spi_at32_get_err(cfg);
 }
@@ -341,8 +337,8 @@ static int spi_at32_start_dma_transceive(const struct device *dev)
 			}
 		}
 	}
-  spi_i2s_dma_transmitter_enable(spix,TRUE);
-  spi_i2s_dma_receiver_enable(spix,TRUE);
+	spi_i2s_dma_transmitter_enable(spix,TRUE);
+	spi_i2s_dma_receiver_enable(spix,TRUE);
 
 on_error:
 	if (ret < 0) {
@@ -372,17 +368,15 @@ static int _spi_at32_transceive_async(const struct device *dev,
 		goto error;
 	}
 
-    spi_enable(spix, TRUE);
+	spi_enable(spix, TRUE);
 
 	spi_context_buffers_setup(&data->ctx, tx_bufs, rx_bufs, 1);
 
 	spi_context_cs_control(&data->ctx, true);
 
 #ifdef CONFIG_SPI_AT32_INTERRUPT
-	{
-		spix->sts &= ~(SPI_I2S_RDBF_FLAG | SPI_I2S_TDBE_FLAG | SPI_AT32_ERR_MASK);
-		spix->ctrl2 |= (SPI_I2S_RDBF_INT | SPI_I2S_TDBE_INT | SPI_I2S_ERROR_INT);
-	}
+	spix->sts &= ~(SPI_I2S_RDBF_FLAG | SPI_I2S_TDBE_FLAG | SPI_AT32_ERR_MASK);
+	spix->ctrl2 |= (SPI_I2S_RDBF_INT | SPI_I2S_TDBE_INT | SPI_I2S_ERROR_INT);
 	ret = spi_context_wait_for_completion(&data->ctx);
 #else
 	do {
@@ -402,7 +396,7 @@ static int _spi_at32_transceive_async(const struct device *dev,
 		/* Wait until last frame transfer complete. */
 	}
 	spi_context_cs_control(&data->ctx, false);
-    spi_enable(spix, FALSE);
+	spi_enable(spix, FALSE);
 
 error:
 	spi_context_release(&data->ctx, ret);
@@ -428,7 +422,7 @@ static int spi_at32_transceive_impl(const struct device *dev,
 		goto error;
 	}
 
-    spi_enable(spix, TRUE);
+	spi_enable(spix, TRUE);
 	spi_context_buffers_setup(&data->ctx, tx_bufs, rx_bufs, 1);
 	spi_context_cs_control(&data->ctx, true);
 
@@ -469,12 +463,12 @@ static int spi_at32_transceive_impl(const struct device *dev,
 
 #ifdef CONFIG_SPI_AT32_DMA
 dma_error:
-   spi_i2s_dma_transmitter_enable(spix, FALSE);
-   spi_i2s_dma_receiver_enable(spix, FALSE);
+	spi_i2s_dma_transmitter_enable(spix, FALSE);
+	spi_i2s_dma_receiver_enable(spix, FALSE);
 
 #endif
 	spi_context_cs_control(&data->ctx, false);
-    spi_enable(spix, FALSE);
+	spi_enable(spix, FALSE);
 
 error:
 	spi_context_release(&data->ctx, ret);
@@ -510,7 +504,9 @@ static void spi_at32_complete(const struct device *dev, int status)
 	const struct spi_at32_config *cfg = dev->config;
 	spi_type *spix = (spi_type *)(cfg->reg);
 
-    spi_i2s_interrupt_enable(spix, SPI_I2S_RDBF_INT |SPI_I2S_TDBE_INT | SPI_I2S_ERROR_INT, false);
+    spi_i2s_interrupt_enable(spix, 
+		SPI_I2S_RDBF_INT |SPI_I2S_TDBE_INT
+					| SPI_I2S_ERROR_INT, false);
 
 #ifdef CONFIG_SPI_AT32_DMA
 	for (size_t i = 0; i < spi_at32_dma_enabled_num(dev); i++) {
@@ -688,14 +684,9 @@ int spi_at32_init(const struct device *dev)
 	{                                                                      \
 		.dev = DEVICE_DT_GET(DT_INST_DMAS_CTLR_BY_NAME(idx, dir)),     \
 		.channel = DT_INST_DMAS_CELL_BY_NAME(idx, dir, channel),       \
-		.slot = COND_CODE_1(                                           \
-			DT_HAS_COMPAT_STATUS_OKAY(at_at32_dma),             \
-			(DT_INST_DMAS_CELL_BY_NAME(idx, dir, slot)), (0)),     \
+		.slot = DT_INST_DMAS_CELL_BY_NAME(idx, dir, slot),     \
 		.config = DT_INST_DMAS_CELL_BY_NAME(idx, dir, config),         \
-		.fifo_threshold = COND_CODE_1(                                 \
-			DT_HAS_COMPAT_STATUS_OKAY(at_at32_dma_v1),             \
-			(DT_INST_DMAS_CELL_BY_NAME(idx, dir, fifo_threshold)), \
-			(0)),						  \
+		.fifo_threshold = 0,						  \
 	}
 
 #define DMAS_DECL(idx)                                                         \
