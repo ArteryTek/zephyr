@@ -14,11 +14,13 @@
 #include <at32_dma.h>
 #include <zephyr/irq.h>
 
-
 #if DT_HAS_COMPAT_STATUS_OKAY(at_at32_dma)
 #define DT_DRV_COMPAT at_at32_dma
 #endif
 
+#if DT_HAS_COMPAT_STATUS_OKAY(at_at32_dma_v1)
+#define DT_DRV_COMPAT at_at32_dma_v1
+#endif
 
 #define AT32_DMA_CH(dma, ch) ((dma_channel_type *)((dma + 0x08UL) + 0x14UL * (uint32_t)(ch)))
 #define AT32_DMA(dma)	     ((dma_type *)(dma + 0x00UL))
@@ -74,32 +76,32 @@ struct dma_at32_srcdst_config {
 	uint32_t adj;
 	uint32_t width;
 };
-
+#if !DT_HAS_COMPAT_STATUS_OKAY(at_at32_dma_v1)
 static  uint32_t  dma_at32_dmamux(uint32_t id)
 {
-  static const uint32_t dmamux_offset [] = {
-    DMA_MUX_CHANNEL_OFFSET1,
-	  DMA_MUX_CHANNEL_OFFSET2,
-	  DMA_MUX_CHANNEL_OFFSET3,
-	  DMA_MUX_CHANNEL_OFFSET4,
-	  DMA_MUX_CHANNEL_OFFSET5,
-	  DMA_MUX_CHANNEL_OFFSET6,
-	  DMA_MUX_CHANNEL_OFFSET7,		
+	static const uint32_t dmamux_offset [] = {
+		DMA_MUX_CHANNEL_OFFSET1,
+		DMA_MUX_CHANNEL_OFFSET2,
+		DMA_MUX_CHANNEL_OFFSET3,
+		DMA_MUX_CHANNEL_OFFSET4,
+		DMA_MUX_CHANNEL_OFFSET5,
+		DMA_MUX_CHANNEL_OFFSET6,
+		DMA_MUX_CHANNEL_OFFSET7,		
   	};
 	__ASSERT_NO_MSG(id < ARRAY_SIZE(dmamux_offset));
 	return dmamux_offset[id];
 }
-
+#endif
 static  uint32_t  dma_at32_channel(uint32_t id)
 {
-  static const uint32_t dmamux_offset [] = {
-	  DMA_CHANNEL_OFFSET1,
-	  DMA_CHANNEL_OFFSET2,
-	  DMA_CHANNEL_OFFSET3,
-	  DMA_CHANNEL_OFFSET4,
-	  DMA_CHANNEL_OFFSET5,
-	  DMA_CHANNEL_OFFSET6,
-	  DMA_CHANNEL_OFFSET7,		
+	static const uint32_t dmamux_offset [] = {
+		DMA_CHANNEL_OFFSET1,
+		DMA_CHANNEL_OFFSET2,
+		DMA_CHANNEL_OFFSET3,
+		DMA_CHANNEL_OFFSET4,
+		DMA_CHANNEL_OFFSET5,
+		DMA_CHANNEL_OFFSET6,
+		DMA_CHANNEL_OFFSET7,		
   };
 	__ASSERT_NO_MSG(id < ARRAY_SIZE(dmamux_offset));
 	return dmamux_offset[id];
@@ -315,7 +317,11 @@ static int dma_at32_configure(const struct device *dev, uint32_t channel,
 	dma_init_type dma_init_struct;
 	dma_type *dma = (dma_type *)cfg->reg;
 	dma_channel_type *dma_channel = (dma_channel_type *)(cfg->reg + dma_at32_channel(CH_OFFSET(channel))) ;
+#if DT_HAS_COMPAT_STATUS_OKAY(at_at32_dma_v1)
+	uint32_t flex_channelx = channel + 1;
+#else
 	dmamux_channel_type *dmamux_channelx = (dmamux_channel_type *)(cfg->reg + dma_at32_dmamux(CH_OFFSET(channel)));
+#endif
 	dma_default_para_init(&dma_init_struct);
     
 	if (CH_OFFSET(channel) >= cfg->channels) {
@@ -323,12 +329,12 @@ static int dma_at32_configure(const struct device *dev, uint32_t channel,
 			cfg->channels, channel);
 		return -EINVAL;
 	}
-
+#if 0
 	if (dma_cfg->block_count != 1) {
 		LOG_ERR("chained block transfer not supported.");
 		return -ENOTSUP;
 	}
-
+#endif
 	if (dma_cfg->channel_priority > 3) {
 		LOG_ERR("channel_priority must be < 4 (%" PRIu32 ")",
 			dma_cfg->channel_priority);
@@ -346,28 +352,28 @@ static int dma_at32_configure(const struct device *dev, uint32_t channel,
 	}
 
 	if (dma_cfg->head_block->source_addr_adj != DMA_ADDR_ADJ_INCREMENT &&
-	    dma_cfg->head_block->source_addr_adj != DMA_ADDR_ADJ_NO_CHANGE) {
+		dma_cfg->head_block->source_addr_adj != DMA_ADDR_ADJ_NO_CHANGE) {
 		LOG_ERR("invalid source_addr_adj %" PRIu16,
-            dma_cfg->head_block->source_addr_adj);
+			dma_cfg->head_block->source_addr_adj);
 		return -ENOTSUP;
 	}
 
 	if (dma_cfg->head_block->dest_addr_adj != DMA_ADDR_ADJ_INCREMENT &&
-	    dma_cfg->head_block->dest_addr_adj != DMA_ADDR_ADJ_NO_CHANGE) {
+		dma_cfg->head_block->dest_addr_adj != DMA_ADDR_ADJ_NO_CHANGE) {
 		LOG_ERR("invalid dest_addr_adj %" PRIu16,
-            dma_cfg->head_block->dest_addr_adj);
+			dma_cfg->head_block->dest_addr_adj);
 		return -ENOTSUP;
 	}
 
 	if (dma_cfg->source_data_size != 1 && dma_cfg->source_data_size != 2 &&
-	    dma_cfg->source_data_size != 4) {
+		dma_cfg->source_data_size != 4) {
 		LOG_ERR("source_data_size must be 1, 2, or 4 (%" PRIu32 ")",
-        dma_cfg->source_data_size);
+			dma_cfg->source_data_size);
 		return -EINVAL;
 	}
 
 	if (dma_cfg->dest_data_size != 1 && dma_cfg->dest_data_size != 2 &&
-	    dma_cfg->dest_data_size != 4) {
+		dma_cfg->dest_data_size != 4) {
 		LOG_ERR("dest_data_size must be 1, 2, or 4 (%" PRIu32 ")",
 			dma_cfg->dest_data_size);
 		return -EINVAL;
@@ -386,7 +392,7 @@ static int dma_at32_configure(const struct device *dev, uint32_t channel,
 		return -ENOTSUP;
 	}
 
-    dma_reset(dma_channel);
+	dma_reset(dma_channel);
 
 	src_cfg.addr = dma_cfg->head_block->source_address;
 	src_cfg.adj = dma_cfg->head_block->source_addr_adj;
@@ -417,37 +423,37 @@ static int dma_at32_configure(const struct device *dev, uint32_t channel,
 
 	dma_init_struct.memory_base_addr = memory_cfg->addr;
 	if (memory_cfg->adj == DMA_ADDR_ADJ_INCREMENT) {
-        dma_init_struct.memory_inc_enable = TRUE;
+		dma_init_struct.memory_inc_enable = TRUE;
 	} else {
-        dma_init_struct.memory_inc_enable = FALSE;
+		dma_init_struct.memory_inc_enable = FALSE;
 	}
 
 	dma_init_struct.peripheral_base_addr = periph_cfg->addr;
 	if (periph_cfg->adj == DMA_ADDR_ADJ_INCREMENT) {
-        dma_init_struct.peripheral_inc_enable = TRUE;
+		dma_init_struct.peripheral_inc_enable = TRUE;
 	} else {
-        dma_init_struct.peripheral_inc_enable = FALSE;
+		dma_init_struct.peripheral_inc_enable = FALSE;
 	}
 
-	dma_init_struct.buffer_size = dma_cfg->head_block->block_size;
-    dma_init_struct.priority = (dma_priority_level_type)dma_cfg->channel_priority;
-    dma_init_struct.memory_data_width = dma_at32_memory_width(memory_cfg->width);
-    dma_init_struct.peripheral_data_width = dma_at32_periph_width(periph_cfg->width);
-	if( dma_cfg->head_block->source_reload_en)
-	{
+	dma_init_struct.buffer_size = dma_cfg->head_block->block_size / dma_cfg->source_data_size;
+	dma_init_struct.priority = (dma_priority_level_type)dma_cfg->channel_priority;
+	dma_init_struct.memory_data_width = dma_at32_memory_width(memory_cfg->width);
+	dma_init_struct.peripheral_data_width = dma_at32_periph_width(periph_cfg->width);
+	if( dma_cfg->head_block->source_reload_en) {
 		dma_interrupt_enable(dma_channel, DMA_HDT_INT, TRUE);
 		dma_init_struct.loop_mode_enable = TRUE;
+	} else {
+		dma_init_struct.loop_mode_enable = FALSE;
 	}
-	else
-	{
-    dma_init_struct.loop_mode_enable = FALSE;
-	}
-  
+
 	dma_init(dma_channel, &dma_init_struct);
 	dma_interrupt_enable(dma_channel, DMA_FDT_INT, TRUE);
-    dmamux_enable(dma, TRUE);
+#if DT_HAS_COMPAT_STATUS_OKAY(at_at32_dma_v1)
+	dma_flexible_config(dma, flex_channelx, (dma_flexible_request_type)dma_cfg->dma_slot);
+#else
+	dmamux_enable(dma, TRUE);
 	dmamux_init(dmamux_channelx, dma_cfg->dma_slot);
-
+#endif
 	data->channels[CH_OFFSET(channel)].callback = dma_cfg->dma_callback;
 	data->channels[CH_OFFSET(channel)].user_data = dma_cfg->user_data;
 	data->channels[CH_OFFSET(channel)].direction = dma_cfg->channel_direction;
@@ -473,21 +479,21 @@ static int dma_at32_reload(const struct device *dev, uint32_t ch, uint32_t src,
 		return -EBUSY;
 	}
 
-    dma_channel_enable(dma_channel, FALSE);
-    dma_data_number_set(dma_channel, size);
+	dma_channel_enable(dma_channel, FALSE);
+	dma_data_number_set(dma_channel, size);
 
 	switch (data->channels[ch].direction) {
-    case MEMORY_TO_MEMORY:
-    case PERIPHERAL_TO_MEMORY:
-        dma_channel->maddr = dst;
-        dma_channel->paddr = src;
+	case MEMORY_TO_MEMORY:
+	case PERIPHERAL_TO_MEMORY:
+		dma_channel->maddr = dst;
+		dma_channel->paddr = src;
 		break;
-    case MEMORY_TO_PERIPHERAL:
-        dma_channel->maddr = src;
-        dma_channel->paddr = dst;
-        break;
+	case MEMORY_TO_PERIPHERAL:
+		dma_channel->maddr = src;
+		dma_channel->paddr = dst;
+		break;
 	}
-    dma_channel_enable(dma_channel, TRUE);
+	dma_channel_enable(dma_channel, TRUE);
 
 	return 0;
 }
@@ -524,7 +530,7 @@ static int dma_at32_stop(const struct device *dev, uint32_t ch)
 		return -EINVAL;
 	}
 
-    dma_interrupt_enable(dma_channel, DMA_FDT_INT | DMA_HDT_INT, FALSE);
+	dma_interrupt_enable(dma_channel, DMA_FDT_INT | DMA_HDT_INT, FALSE);
 	dma->clr = DMA_FLAG_ADD(DMA1_FDT1_FLAG |DMA1_HDT1_FLAG, CH_OFFSET(ch));
 	dma_channel_enable(dma_channel, FALSE);
 
@@ -610,20 +616,20 @@ static void dma_at32_isr(const struct device *dev)
 			data->channels[CH_OFFSET(i)].busy = false;
 			at32_dma_interrupt_flag_clear(cfg->reg, i, DMA1_DTERR1_FLAG);
 		}
-		
+
 		if(htflag != 0)
 		{
 			ret = DMA_STATUS_BLOCK;
 			at32_dma_interrupt_flag_clear(cfg->reg, i,  DMA1_HDT1_FLAG);
 		}
-		
+
 		if(ftfflag != 0)
 		{
 			ret = DMA_STATUS_COMPLETE;
 			data->channels[CH_OFFSET(i)].busy = false;
 			at32_dma_interrupt_flag_clear(cfg->reg, i, DMA1_FDT1_FLAG);
 		}
-		
+
 		if (data->channels[CH_OFFSET(i)].callback) {
 			data->channels[CH_OFFSET(i)].callback(dev, 
 			data->channels[CH_OFFSET(i)].user_data, i, ret);
@@ -662,7 +668,7 @@ static DEVICE_API(dma, dma_at32_driver_api) = {
 			   (.reset = RESET_DT_SPEC_INST_GET(inst),))           \
 		.irq_configure = dma_at32##inst##_irq_configure,               \
 	};                                                                     \
-                                                                               \
+																		\
 	static struct dma_at32_channel                                         \
 		dma_at32##inst##_channels[DT_INST_PROP(inst, dma_channels)];   \
 	ATOMIC_DEFINE(dma_at32_atomic##inst,                                   \
@@ -675,7 +681,7 @@ static DEVICE_API(dma, dma_at32_driver_api) = {
 		},                                                             \
 		.channels = dma_at32##inst##_channels,                         \
 	};                                                                     \
-                                                                               \
+																			\
 	DEVICE_DT_INST_DEFINE(inst, &dma_at32_init, NULL,                      \
 			      &dma_at32##inst##_data,                          \
 			      &dma_at32##inst##_config, POST_KERNEL,           \
