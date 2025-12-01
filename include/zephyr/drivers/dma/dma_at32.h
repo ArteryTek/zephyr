@@ -9,6 +9,7 @@
 
 #define AT32_DMA_CONFIG_DIRECTION(config)	     ((config >> 6) & 0x3)
 #define AT32_DMA_CONFIG_PERIPH_ADDR_INC(config)	     ((config >> 9) & 0x1)
+#define AT32_DMA_CONFIG_PERIPHERAL_ADDR_INC(config)	 ((config >> 9) & 0x1)
 #define AT32_DMA_CONFIG_MEMORY_ADDR_INC(config)	     ((config >> 10) & 0x1)
 #define AT32_DMA_CONFIG_PERIPH_WIDTH(config)	     (1 << ((config >> 11) & 0x3))
 #define AT32_DMA_CONFIG_MEMORY_WIDTH(config)	     (1 << ((config >> 13) & 0x3))
