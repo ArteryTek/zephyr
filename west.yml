@@ -162,7 +162,7 @@ manifest:
         - hal
     - name: hal_at32
       remote: ArteryTek
-      revision: 07d127d2e59d200f31f85db0e0cf6c75c053134d
+      revision: c6b6c1dad423e9e8ad0d20e4dd7afc2bb5516638
       path: modules/hal/at32
       groups:
         - hal
