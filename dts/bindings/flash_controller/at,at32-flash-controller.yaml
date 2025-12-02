@@ -1,0 +1,5 @@
+description: AT32 flash controller
+
+compatible: "at,at32-flash-controller"
+
+include: flash-controller.yaml

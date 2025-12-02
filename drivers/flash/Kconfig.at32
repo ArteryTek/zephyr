@@ -1,0 +1,19 @@
+# ST Microelectronics AT32 MCUs Flash driver config
+
+# Copyright (c) 2016 RnDity Sp. z o.o.
+# Copyright (c) 2017 BayLibre, SAS
+# Copyright (c) 2022 Linaro Limited
+# Copyright (c) 2023 Google Inc
+# Copyright (c) 2025 Maxjta
+# SPDX-License-Identifier: Apache-2.0
+
+config SOC_FLASH_AT32
+	bool "AT32 flash driver"
+	depends on DT_HAS_AT_AT32_FLASH_CONTROLLER_ENABLED
+	select FLASH_HAS_DRIVER_ENABLED
+	default y
+	select USE_AT32_FLASH
+	select FLASH_HAS_PAGE_LAYOUT
+	select FLASH_HAS_EXPLICIT_ERASE
+	help
+	  Enable flash driver for AT32 series
