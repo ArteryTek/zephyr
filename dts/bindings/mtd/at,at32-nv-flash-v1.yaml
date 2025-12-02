@@ -1,0 +1,6 @@
+description: |
+  AT32 V1 flash memory.
+
+include: at,at32-nv-flash.yaml
+
+compatible: at,at32-nv-flash-v1

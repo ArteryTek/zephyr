@@ -1,0 +1,37 @@
+description: |
+  AT32 flash memory.
+
+  This binding is for the flash memory itself, not the flash controller peripheral.
+  For that, see the "at,at32-flash-controller" binding.
+
+include: soc-nv-flash.yaml
+
+compatible: at,at32-nv-flash
+
+properties:
+  max-erase-time:
+    type: int
+    description: max erase time(millisecond) of a flash sector or page or half-page
+    required: true
+  bank2-flash-size:
+    type: int
+    description: |
+      Embedded flash memory bank 2 size in KBytes.
+      Used by CM4 CPU because it cannot access flash controller register to read size.
+      Provides a way to configure this size when the flash controller driver runs on CM4 CPU.
+  page-size:
+    type: int
+    description: the flash page size
+    required: true
+  write-block-size:
+    required: true
+    type: int
+    enum:
+      - 1
+      - 2
+      - 4
+      - 8
+    default: 1
+    description: |
+      Number of bytes used in write operations. Default value is based on the
+      reset value of Flash Control Register (FLASH_CTRL).

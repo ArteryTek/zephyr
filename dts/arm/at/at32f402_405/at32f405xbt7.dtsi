@@ -11,8 +11,8 @@
 	soc {
 		flash-controller@40023c00 {
 			flash0: flash@8000000 {
-				reg = <0x08000000 DT_SIZE_K(256)>;
-				page-size = <DT_SIZE_K(2)>;
+				reg = <0x08000000 DT_SIZE_K(128)>;
+				page-size = <DT_SIZE_K(1)>;
 				bank2-flash-size = <0>;
 			};
 		};

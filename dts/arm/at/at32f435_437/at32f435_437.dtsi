@@ -103,13 +103,14 @@
 			compatible = "at,at32-flash-controller";
 			label = "FLASH_CTRL";
 			reg = <0x40023c00 0x400>;
-			peripheral-id = <6>;
 
 			#address-cells = <1>;
 			#size-cells = <1>;
 
 			flash0: flash@8000000 {
-				compatible = "soc-nv-flash";
+				compatible = "at,at32-nv-flash-v1", "at,at32-nv-flash", "soc-nv-flash";
+				write-block-size = <2>;
+				max-erase-time = <40>;
 			};
 		};
 

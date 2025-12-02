@@ -9,7 +9,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 #define DT_DRV_COMPAT at_at32_adc
 
 #include <errno.h>
@@ -152,7 +151,7 @@ struct adc_at32_cfg {
 static void adc_at32_enable_dma_support(adc_type *adc)
 {
 	/* Allow ADC to create DMA request and set to one-shot mode as implemented in HAL drivers */
-    adc_dma_mode_enable(adc, TRUE);
+	adc_dma_mode_enable(adc, TRUE);
 #if defined	(AT32_ADC_5M)
 	adc_dma_request_repeat_enable(adc, TRUE);
 #endif
@@ -172,7 +171,7 @@ static int adc_at32_dma_start(const struct device *dev,
 	blk_cfg = &dma->dma_blk_cfg;
 
 	/* prepare the block */
-	blk_cfg->block_size = channel_count; //* sizeof(adc_data_size_t);
+	blk_cfg->block_size = channel_count * sizeof(adc_data_size_t);
 
 	/* Source and destination */
 	blk_cfg->source_address = (uint32_t)(&adc->odt);
@@ -240,7 +239,7 @@ static int adc_at32_enable(adc_type *adc)
 		return 0;
 	}
 
-    adc_enable(adc, TRUE);
+	adc_enable(adc, TRUE);
 
 	return 0;
 }
@@ -252,7 +251,7 @@ static void adc_at32_start_conversion(const struct device *dev)
 
 	LOG_DBG("Starting conversion");
 
-    adc_ordinary_software_trigger_enable(adc, TRUE);
+	adc_ordinary_software_trigger_enable(adc, TRUE);
 }
 
 /*
@@ -263,7 +262,6 @@ static void adc_at32_disable(adc_type *adc)
 	adc_enable(adc, FALSE);
 }
 
-
 static int adc_at32_calibrate(const struct device *dev)
 {
 	const struct adc_at32_cfg *config =
@@ -272,14 +270,13 @@ static int adc_at32_calibrate(const struct device *dev)
 
 	adc_enable(adc, TRUE);
 	adc_calibration_init(adc);
-    while (adc_calibration_init_status_get(adc)) {
+	while (adc_calibration_init_status_get(adc)) {
 	};
-    adc_calibration_start(adc);
-    while (adc_calibration_status_get(adc)) {
+	adc_calibration_start(adc);
+	while (adc_calibration_status_get(adc)) {
 	};
 	return 0;
 }
-
 
 #if defined(HAS_OVERSAMPLING)
 
@@ -409,7 +406,7 @@ static int set_resolution(const struct device *dev,
 	adc_type *adc = config->base;
 	uint32_t resolution = 0, res_val = 0;
 	int i;
-    
+
 	if (config->res_table_size <= 1) {
 		return 0;
 	}
@@ -429,19 +426,19 @@ static int set_resolution(const struct device *dev,
 	res_val &= ~(3 << 24);
 	switch (resolution) {
 		case 6:
-		    res_val |= 3 << 24;
-		    break;
+			res_val |= 3 << 24;
+			break;
 		case 8:
-		    res_val |= 2 << 24;
+			res_val |= 2 << 24;
 			break;
 		case 10:
-		    res_val |= 1 << 24;
+			res_val |= 1 << 24;
 			break;
 		case 12:
-		    res_val |= 0 << 24;
+			res_val |= 0 << 24;
 			break;
 		default:
-		    break;
+			break;
 	}
 	adc->ctrl1 |= res_val;
 
@@ -451,6 +448,34 @@ static int set_resolution(const struct device *dev,
 static void at32_adc_sequencer_channel_set(adc_type *adc, uint8_t channel, uint8_t adc_sequence)
 {
 	uint32_t tmp_reg;
+
+#if defined(CONFIG_SOC_SERIES_AT32F423)
+	if (adc_sequence > 32) {
+		return;
+	}
+#else
+	if (adc_sequence > 16) {
+		return;
+	}
+#endif
+#if defined(CONFIG_SOC_SERIES_AT32F423)
+	if(adc_sequence >= 29) {
+		tmp_reg = adc->osq6;
+		tmp_reg &= ~(0x1F << (5 * (adc_sequence - 29)));
+		tmp_reg |= (channel << (5 * (adc_sequence - 29)));
+		adc->osq6 = tmp_reg;
+	} else if(adc_sequence >= 23) {
+		tmp_reg = adc->osq5;
+		tmp_reg &= ~(0x1F << (5 * (adc_sequence - 23)));
+		tmp_reg |= (channel << (5 * (adc_sequence - 23)));
+		adc->osq5 = tmp_reg;
+	} else if (adc_sequence >= 17) {
+		tmp_reg = adc->osq4;
+		tmp_reg &= ~(0x1F << (5 * (adc_sequence - 17)));
+		tmp_reg |= (channel << (5 * (adc_sequence - 17)));
+		adc->osq4 = tmp_reg;
+	} else
+#endif
 	if(adc_sequence >= 13) {
 		tmp_reg = adc->osq1;
 		tmp_reg &= ~(0x1F << (5 * (adc_sequence - 13)));
@@ -462,8 +487,7 @@ static void at32_adc_sequencer_channel_set(adc_type *adc, uint8_t channel, uint8
 		tmp_reg &= ~(0x1F << (5 * (adc_sequence - 7)));
 		tmp_reg |= (channel << (5 * (adc_sequence - 7)));
 		adc->osq2 = tmp_reg;
-	}
-	else {
+	} else {
 		tmp_reg = adc->osq3;
 		tmp_reg &= ~(0x1F << (5 * (adc_sequence - 1)));
 		tmp_reg |= (channel << (5 * (adc_sequence - 1)));
@@ -492,7 +516,7 @@ static int set_sequencer(const struct device *dev)
 		uint32_t channel = channel_id;
 
 		channels_mask |= channel;
-        at32_adc_sequencer_channel_set(adc, channel, channel_index + 1);
+		at32_adc_sequencer_channel_set(adc, channel, channel_index + 1);
 
 	}
     adc->ctrl1_bit.sqen = 1;
@@ -507,7 +531,7 @@ static int start_read(const struct device *dev,
 	struct adc_at32_data *data = dev->data;
 	adc_type *adc = config->base;
 	int err;
-    
+
 	data->buffer = sequence->buffer;
 	data->channels = sequence->channels;
 	data->channel_count = POPCOUNT(data->channels);
@@ -561,10 +585,10 @@ static int start_read(const struct device *dev,
 	 * to set the resolution, to set the oversampling or to perform the
 	 * calibration.
 	 */
-    adc_at32_enable(adc);
+	adc_at32_enable(adc);
 
 #if !defined(CONFIG_ADC_AT32_DMA)
-    adc_interrupt_enable(ADC1, ADC_CCE_INT, TRUE);
+	adc_interrupt_enable(ADC1, ADC_CCE_INT, TRUE);
 #endif /* CONFIG_ADC_AT32_DMA */
 
 	/* This call will start the DMA */
@@ -590,7 +614,9 @@ static void adc_context_start_sampling(struct adc_context *ctx)
 
 	data->repeat_buffer = data->buffer;
 #ifdef CONFIG_ADC_AT32_DMA
+	adc_at32_disable(adc);
 	adc_at32_dma_start(dev, data->buffer, data->channel_count);
+	adc_at32_enable(adc);
 #endif
 	adc_at32_start_conversion(dev);
 }
@@ -614,7 +640,7 @@ static void adc_at32_isr(const struct device *dev)
 		(const struct adc_at32_cfg *)dev->config;
 	adc_type *adc = config->base;
 	if (adc_flag_get(adc, 0x2)) {
-        *data->buffer++ = adc_ordinary_conversion_data_get(adc);
+		*data->buffer++ = adc_ordinary_conversion_data_get(adc);
 		/* ISR is triggered after each conversion, and at the end-of-sequence. */
 		if (++data->samples_count == data->channel_count) {
 			data->samples_count = 0;
@@ -874,9 +900,7 @@ static DEVICE_API(adc, api_at32_driver_api) = {
 		.dma_dev = DEVICE_DT_GET(DT_INST_DMAS_CTLR_BY_NAME(index, rx)),		\
 		.channel = DT_INST_DMAS_CELL_BY_NAME(index, rx, channel),			\
 		.dma_cfg = {								\
-			.dma_slot = COND_CODE_1(                                           \
-				DT_HAS_COMPAT_STATUS_OKAY(at_at32_dma),             \
-				(DT_INST_DMAS_CELL_BY_NAME(index, rx, slot)), (0)),     \
+			.dma_slot = DT_INST_DMAS_CELL_BY_NAME(index, rx, slot),          \
 			.channel_direction = AT32_DMA_CONFIG_DIRECTION(		\
 				DT_INST_DMAS_CELL_BY_IDX(index, 0, config)),		\
 			.source_data_size = AT32_DMA_CONFIG_##src_dev##_WIDTH(	\
@@ -964,8 +988,18 @@ static void adc_at32_irq_cfg(void)
 		DEVICE_DT_GET(ADC2_NODE),
 		0);
 	irq_enable(DT_IRQN(ADC2_NODE));
+#elif ADC3_ENABLE
+	IRQ_CONNECT(DT_IRQN(ADC3_NODE),
+		DT_IRQ(ADC3_NODE, priority),
+		adc_at32_irq_handler,
+		DEVICE_DT_GET(ADC3_NODE),
+		0);
+	irq_enable(DT_IRQN(ADC3_NODE));
 #endif
 }
+
+#define ADC_DMA_CHANNEL_INIT(index, src_dev, dest_dev)
+
 #endif /* CONFIG_ADC_AT32_DMA */
 
 #define ADC_DMA_CHANNEL(id, src, dest)							\

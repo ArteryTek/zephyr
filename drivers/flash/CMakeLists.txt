@@ -162,6 +162,15 @@ if(CONFIG_SOC_FLASH_GD32)
 # zephyr-keep-sorted-stop
 endif()
 
+if(CONFIG_SOC_FLASH_AT32)
+  zephyr_library_sources(flash_at32.c)
+
+# zephyr-keep-sorted-start
+  zephyr_library_sources_ifdef(CONFIG_DT_HAS_AT_AT32_NV_FLASH_V1_ENABLED flash_at32_v1.c)
+
+# zephyr-keep-sorted-stop
+endif()
+
 zephyr_library_include_directories_ifdef(
   CONFIG_FLASH_MCUX_FLEXSPI_NOR
   ${ZEPHYR_BASE}/drivers/memc

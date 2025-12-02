@@ -5,13 +5,13 @@
  */
 
 #include <mem.h>
-#include <at/at32f402_405/at32f405.dtsi>
+#include <at/at32f403a_407/at32f403a_407.dtsi>
 
 / {
 	soc {
-		flash-controller@40023c00 {
+		flash-controller@40022000 {
 			flash0: flash@8000000 {
-				reg = <0x08000000 DT_SIZE_K(256)>;
+				reg = <0x08000000 DT_SIZE_K(512)>;
 				page-size = <DT_SIZE_K(2)>;
 				bank2-flash-size = <0>;
 			};
