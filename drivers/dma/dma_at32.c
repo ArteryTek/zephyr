@@ -247,6 +247,11 @@ at32_dma_flag_clear(uint32_t reg, dma_channel_enum ch, uint32_t flag)
 static inline uint32_t
 at32_dma_interrupt_flag_get(uint32_t reg, dma_channel_enum ch, uint32_t flag)
 {
+	__IO uint32_t ret = AT32_DMA_CH(reg, CH_OFFSET(ch))->ctrl;
+	if ((ret & flag) == 0) {
+		return 0;
+	}
+
 	return (AT32_DMA(reg)->sts & DMA_FLAG_ADD(flag, CH_OFFSET(ch)));
 }
 
@@ -511,6 +516,7 @@ static int dma_at32_start(const struct device *dev, uint32_t ch)
 	}
 
 	dma_channel_enable(dma_channel, TRUE);
+
 	data->channels[CH_OFFSET(ch)].busy = true;
 
 	return 0;
@@ -600,39 +606,36 @@ static void dma_at32_isr(const struct device *dev)
 	const struct dma_at32_config *cfg = dev->config;
 	struct dma_at32_data *data = dev->data;
 	uint32_t errflag, ftfflag, htflag;
-	int ret = 0;
 
 	for (uint32_t i = 0; i < cfg->channels; i++) {
 
 		errflag = at32_dma_interrupt_flag_get(cfg->reg, i,DMA1_DTERR1_FLAG);
 		htflag = at32_dma_interrupt_flag_get(cfg->reg, i, DMA1_HDT1_FLAG);
 		ftfflag = at32_dma_interrupt_flag_get(cfg->reg, i, DMA1_FDT1_FLAG);
-		if (errflag == 0 && ftfflag == 0 && htflag) {
+		if (errflag == 0 && ftfflag == 0 && htflag == 0) {
 			continue;
 		}
-		if(errflag != 0)
-		{
-			ret = -EIO;
-			data->channels[CH_OFFSET(i)].busy = false;
-			at32_dma_interrupt_flag_clear(cfg->reg, i, DMA1_DTERR1_FLAG);
-		}
 
-		if(htflag != 0)
-		{
-			ret = DMA_STATUS_BLOCK;
+		if (htflag != 0) {
 			at32_dma_interrupt_flag_clear(cfg->reg, i,  DMA1_HDT1_FLAG);
-		}
-
-		if(ftfflag != 0)
-		{
-			ret = DMA_STATUS_COMPLETE;
+			if (data->channels[CH_OFFSET(i)].callback) {
+				data->channels[CH_OFFSET(i)].callback(dev, 
+				data->channels[CH_OFFSET(i)].user_data, i, DMA_STATUS_BLOCK);
+			}
+		} else if (ftfflag != 0) {
 			data->channels[CH_OFFSET(i)].busy = false;
 			at32_dma_interrupt_flag_clear(cfg->reg, i, DMA1_FDT1_FLAG);
-		}
-
-		if (data->channels[CH_OFFSET(i)].callback) {
-			data->channels[CH_OFFSET(i)].callback(dev, 
-			data->channels[CH_OFFSET(i)].user_data, i, ret);
+			if (data->channels[CH_OFFSET(i)].callback) {
+				data->channels[CH_OFFSET(i)].callback(dev, 
+				data->channels[CH_OFFSET(i)].user_data, i, DMA_STATUS_COMPLETE);
+			}
+		} else {
+			data->channels[CH_OFFSET(i)].busy = false;
+			at32_dma_interrupt_flag_clear(cfg->reg, i, DMA1_DTERR1_FLAG);
+			if (data->channels[CH_OFFSET(i)].callback) {
+				data->channels[CH_OFFSET(i)].callback(dev, 
+				data->channels[CH_OFFSET(i)].user_data, i, -EIO);
+			}
 		}
 	}
 }
