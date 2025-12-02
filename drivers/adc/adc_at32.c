@@ -9,7 +9,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 #define DT_DRV_COMPAT at_at32_adc
 
 #include <errno.h>
@@ -615,7 +614,9 @@ static void adc_context_start_sampling(struct adc_context *ctx)
 
 	data->repeat_buffer = data->buffer;
 #ifdef CONFIG_ADC_AT32_DMA
+	adc_at32_disable(adc);
 	adc_at32_dma_start(dev, data->buffer, data->channel_count);
+	adc_at32_enable(adc);
 #endif
 	adc_at32_start_conversion(dev);
 }
@@ -899,9 +900,7 @@ static DEVICE_API(adc, api_at32_driver_api) = {
 		.dma_dev = DEVICE_DT_GET(DT_INST_DMAS_CTLR_BY_NAME(index, rx)),		\
 		.channel = DT_INST_DMAS_CELL_BY_NAME(index, rx, channel),			\
 		.dma_cfg = {								\
-			.dma_slot = COND_CODE_1(                                           \
-				DT_HAS_COMPAT_STATUS_OKAY(at_at32_dma),             \
-				(DT_INST_DMAS_CELL_BY_NAME(index, rx, slot)), (0)),     \
+			.dma_slot = DT_INST_DMAS_CELL_BY_NAME(index, rx, slot),          \
 			.channel_direction = AT32_DMA_CONFIG_DIRECTION(		\
 				DT_INST_DMAS_CELL_BY_IDX(index, 0, config)),		\
 			.source_data_size = AT32_DMA_CONFIG_##src_dev##_WIDTH(	\
@@ -998,6 +997,9 @@ static void adc_at32_irq_cfg(void)
 	irq_enable(DT_IRQN(ADC3_NODE));
 #endif
 }
+
+#define ADC_DMA_CHANNEL_INIT(index, src_dev, dest_dev)
+
 #endif /* CONFIG_ADC_AT32_DMA */
 
 #define ADC_DMA_CHANNEL(id, src, dest)							\
