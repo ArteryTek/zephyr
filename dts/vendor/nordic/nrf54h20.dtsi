@@ -7,7 +7,7 @@
 #include <mem.h>
 #include <nordic/nrf_common.dtsi>
 
-#include <zephyr/dt-bindings/adc/nrf-saadc-haltium.h>
+#include <zephyr/dt-bindings/adc/nrf-saadc.h>
 #include <zephyr/dt-bindings/clock/nrfs-audiopll.h>
 #include <zephyr/dt-bindings/clock/nrf-auxpll.h>
 #include <zephyr/dt-bindings/misc/nordic-nrf-ficr-nrf54h20.h>
@@ -488,7 +488,7 @@
 				status = "disabled";
 				ble-2mbps-supported;
 				ble-coded-phy-supported;
-				cs-supported;
+				ble-cs-supported;
 				dfe-supported;
 				ieee802154-supported;
 				interrupts = <44 NRF_DEFAULT_IRQ_PRIORITY>;
