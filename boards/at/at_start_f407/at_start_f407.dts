@@ -143,8 +143,16 @@ zephyr_udc0: &usb_fs {
 	status = "okay";
 	pinctrl-0 = <&i2s1_default>;
 	pinctrl-names = "default";
-	dmas = <&dma1 1 9 1 0>, <&dma1 2 10 2 0>;
-	dma-names = "rx", "tx";
+	dmas = <&dma1 1 9 AT32_DMA_MEMORY_ADDR_INC 0>;
+	dma-names = "rx";
+};
+
+&i2s2 {
+	status = "okay";
+	pinctrl-0 = <&i2s2_default>;
+	pinctrl-names = "default";
+	dmas = <&dma1 2 12 AT32_DMA_MEMORY_ADDR_INC 0>;
+	dma-names = "tx";
 };
 
 &adc1 {

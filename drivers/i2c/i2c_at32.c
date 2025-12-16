@@ -1086,6 +1086,8 @@ int at32_i2c_configure_timing(const struct device *dev, uint32_t clock)
 	uint32_t temp, speed;
 	uint32_t freq_mhz;
 
+	i2c->ctrl2_bit.clkfreq = clock/1000000;
+
 	switch (I2C_SPEED_GET(data->dev_config)) {
 	case I2C_SPEED_STANDARD:
 		speed = 100000;

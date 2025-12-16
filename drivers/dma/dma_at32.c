@@ -63,6 +63,8 @@ struct dma_at32_channel {
 	dma_callback_t callback;
 	void *user_data;
 	uint32_t direction;
+	uint32_t dest_width;
+	uint32_t src_width;
 	bool busy;
 };
 
@@ -459,6 +461,8 @@ static int dma_at32_configure(const struct device *dev, uint32_t channel,
 	dmamux_enable(dma, TRUE);
 	dmamux_init(dmamux_channelx, dma_cfg->dma_slot);
 #endif
+	data->channels[CH_OFFSET(channel)].dest_width = dst_cfg.width;
+	data->channels[CH_OFFSET(channel)].src_width = src_cfg.width;
 	data->channels[CH_OFFSET(channel)].callback = dma_cfg->dma_callback;
 	data->channels[CH_OFFSET(channel)].user_data = dma_cfg->user_data;
 	data->channels[CH_OFFSET(channel)].direction = dma_cfg->channel_direction;
@@ -485,17 +489,20 @@ static int dma_at32_reload(const struct device *dev, uint32_t ch, uint32_t src,
 	}
 
 	dma_channel_enable(dma_channel, FALSE);
-	dma_data_number_set(dma_channel, size);
 
-	switch (data->channels[ch].direction) {
+	switch (data->channels[CH_OFFSET(ch)].direction) {
 	case MEMORY_TO_MEMORY:
 	case PERIPHERAL_TO_MEMORY:
 		dma_channel->maddr = dst;
 		dma_channel->paddr = src;
+		dma_data_number_set(dma_channel,
+			size/data->channels[CH_OFFSET(ch)].src_width);
 		break;
 	case MEMORY_TO_PERIPHERAL:
 		dma_channel->maddr = src;
 		dma_channel->paddr = dst;
+		dma_data_number_set(dma_channel,
+			size/data->channels[CH_OFFSET(ch)].dest_width);
 		break;
 	}
 	dma_channel_enable(dma_channel, TRUE);

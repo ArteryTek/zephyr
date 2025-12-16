@@ -26,7 +26,13 @@
 	i2s1_default: i2s1_default {
 		group1 {
 			pinmux = <I2S1_WS_PA4_MASTER_NORMP>, <I2S1_SCK_PA5_MASTER_NORMP>,
-				 <SPI1_SD_PA7_TX_NORMP>;
+				 <SPI1_SD_PA7_RX_NORMP>;
+		};
+	};
+	i2s2_default: i2s2_default {
+		group1 {
+			pinmux = <I2S2_WS_PB12_MASTER_NORMP>, <I2S2_SCK_PB13_MASTER_NORMP>,
+				 <i2S2_SD_PB15_TX_NORMP>;
 		};
 	};
 	adc1_default: adc1_default {

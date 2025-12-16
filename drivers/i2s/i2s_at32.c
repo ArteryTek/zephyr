@@ -132,7 +132,7 @@ static int i2s_at32_set_clock(const struct device *dev,
 {
 	const struct i2s_at32_cfg *cfg = dev->config;
 	uint32_t freq_in = 0U;
-	uint8_t i2s_div, i2s_odd;
+	uint32_t i2s_div, i2s_odd;
 
 	/* Handle multiple clock sources */
 	if (clock_control_get_rate(AT32_CLOCK_CONTROLLER,
@@ -141,6 +141,9 @@ static int i2s_at32_set_clock(const struct device *dev,
 		LOG_ERR("Failed call clock_control_get_rate(clkid[1])");
 		return -EIO;
 	}
+
+	freq_in = CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC;
+
 	/*
 	 * The ratio between input clock (I2SxClk) and output
 	 * clock on the pad (I2S_CK) is obtained using the
@@ -187,19 +190,28 @@ static int i2s_at32_configure(const struct device *dev, enum i2s_dir dir,
 		((i2s_cfg->format & I2S_FMT_DATA_FORMAT_MASK) == I2S_FMT_DATA_FORMAT_I2S)
 			? 2U
 			: i2s_cfg->channels;
-	struct stream *stream;
+	struct stream *stream = NULL;
 	uint32_t bit_clk_freq;
 	bool enable_mck;
 	int ret;
 
-	if (dir == I2S_DIR_RX) {
+	if (dir == I2S_DIR_RX && (dev_data->rx.dev_dma != NULL)) {
 		stream = &dev_data->rx;
-	} else if (dir == I2S_DIR_TX) {
+	} else if (dir == I2S_DIR_TX && (dev_data->tx.dev_dma != NULL)) {
 		stream = &dev_data->tx;
 	} else if (dir == I2S_DIR_BOTH) {
 		return -ENOSYS;
 	} else {
 		LOG_ERR("Either RX or TX direction must be selected");
+		return -EINVAL;
+	}
+
+	if (stream == NULL) {
+		LOG_ERR("Rx or TX dir error");
+		return -EINVAL;
+	}
+	if (i2s_cfg->channels > 2) {
+		LOG_ERR("Currently max 2 channels are supported");
 		return -EINVAL;
 	}
 
@@ -272,7 +284,7 @@ static int i2s_at32_configure(const struct device *dev, enum i2s_dir dir,
 	}
 
 	/* set I2S Standard */
-	switch (i2s_cfg->format & I2S_FMT_DATA_FORMAT_MASK) {
+	switch (i2s_cfg->format) {
 	case I2S_FMT_DATA_FORMAT_I2S:
 		cfg->i2s->i2sctrl_bit.pcmfssel = 0;
 		cfg->i2s->i2sctrl_bit.stdsel = 0;
@@ -310,6 +322,7 @@ static int i2s_at32_configure(const struct device *dev, enum i2s_dir dir,
 		cfg->i2s->i2sctrl_bit.i2sclkpol = FALSE;
 	}
 
+	cfg->i2s->i2sctrl_bit.i2smsel = TRUE;
 	stream->state = I2S_STATE_READY;
 	return 0;
 }
@@ -320,9 +333,9 @@ static const struct i2s_config *i2s_at32_config_get(const struct device *dev,
 	struct i2s_at32_data *const dev_data = dev->data;
 	struct stream *stream = NULL;
 
-	if (dir == I2S_DIR_RX) {
+	if (dir == I2S_DIR_RX && (dev_data->rx.dev_dma != NULL)) {
 		stream = &dev_data->rx;
-	} else if (dir == I2S_DIR_TX) {
+	} else if (dir == I2S_DIR_TX && (dev_data->tx.dev_dma != NULL)) {
 		stream = &dev_data->tx;
 	}
 
@@ -338,19 +351,24 @@ static int i2s_at32_trigger(const struct device *dev, enum i2s_dir dir,
 {
 	struct i2s_at32_data *const dev_data = dev->data;
 	const struct i2s_at32_cfg *const cfg = dev->config;
-	struct stream *stream;
+	struct stream *stream = NULL;
 	unsigned int key;
 	int ret;
 
-	if (dir == I2S_DIR_RX) {
+	if (dir == I2S_DIR_RX && (dev_data->rx.dev_dma != NULL)) {
 		stream = &dev_data->rx;
-	} else if (dir == I2S_DIR_TX) {
+	} else if (dir == I2S_DIR_TX && (dev_data->tx.dev_dma != NULL)) {
 		stream = &dev_data->tx;
-	} else if (dir == I2S_DIR_BOTH) {
+	}
+	else if (dir == I2S_DIR_BOTH) {
 		return -ENOSYS;
 	} else {
 		LOG_ERR("Either RX or TX direction must be selected");
 		return -EINVAL;
+	}
+
+	if (stream == NULL){
+		LOG_ERR("Either RX or TX direction must be selected");
 	}
 
 	switch (cmd) {
@@ -510,8 +528,6 @@ static int reload_dma(const struct device *dev_dma, uint32_t channel,
 	if (ret < 0) {
 		return ret;
 	}
-
-	ret = dma_start(dev_dma, channel);
 
 	return ret;
 }
@@ -768,12 +784,13 @@ static int i2s_at32_initialize(const struct device *dev)
 	}
 
 	/* Get the binding to the DMA device */
-	if (!device_is_ready(dev_data->tx.dev_dma)) {
-		LOG_ERR("%s device not ready", dev_data->tx.dev_dma->name);
-		return -ENODEV;
-	}
-	if (!device_is_ready(dev_data->rx.dev_dma)) {
-		LOG_ERR("%s device not ready", dev_data->rx.dev_dma->name);
+	if (!device_is_ready(dev_data->tx.dev_dma) && !device_is_ready(dev_data->rx.dev_dma)) {
+		if (!device_is_ready(dev_data->tx.dev_dma)) {
+			LOG_ERR("%s device not ready", dev_data->tx.dev_dma->name);
+		} else {
+			LOG_ERR("%s device not ready", dev_data->rx.dev_dma->name);
+		}
+
 		return -ENODEV;
 	}
 
@@ -960,9 +977,9 @@ static const struct device *get_dev_from_tx_dma_channel(uint32_t dma_channel)
 										\
 	static struct i2s_at32_data i2s_at32_data_##index = {			\
 		IF_ENABLED(DT_INST_DMAS_HAS_NAME(index, rx),			\
-			   (I2S_DMA_CHANNEL_INIT(index, rx, RX, PERIPHERAL, MEMORY))),\
+			   (I2S_DMA_CHANNEL_INIT(index, rx, RX, PERIPHERAL, MEMORY)))\
 		IF_ENABLED(DT_INST_DMAS_HAS_NAME(index, tx),			\
-			   (I2S_DMA_CHANNEL_INIT(index, tx, TX, MEMORY, PERIPHERAL))),\
+			   (I2S_DMA_CHANNEL_INIT(index, tx, TX, MEMORY, PERIPHERAL)))\
 	};									\
 	DEVICE_DT_INST_DEFINE(index,						\
 			      &i2s_at32_initialize, NULL,			\
