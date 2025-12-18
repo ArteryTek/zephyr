@@ -390,7 +390,7 @@ static void handle_msg_data_out(struct udc_at32_data *priv, uint8_t epnum, uint1
 				status = hal_udc_start_read(&priv->pcd, ep_cfg->addr,
 							    net_buf_tail(buf),
 							    UDC_AT32_EP0_MAX_PACKET_SIZE);
-				__ASSERT_NO_MSG(status == HAL_OK);
+				__ASSERT_NO_MSG(status == 0);
 				return;
 			} /* else: buf->len == priv->ep0_out_wlength */
 
@@ -627,23 +627,47 @@ static int udc_at32_ep_mem_config(const struct device *dev,
 {
 	struct udc_at32_data *priv = udc_get_private(dev);
 	const struct udc_at32_config *cfg = dev->config;
+	uint32_t offset = 0;
 	uint32_t size;
+	uint8_t is_db = 0;
+
+	if ((ep_cfg->attributes & USB_EP_TRANSFER_TYPE_MASK) ==
+		USB_EP_TYPE_ISO) {
+		is_db = 1;
+	}
 
 	size = MIN(udc_mps_ep_size(ep_cfg), cfg->ep_mps);
 
 	if (!enable) {
-		priv->occupied_mem -= size;
+		if (is_db) {
+				priv->occupied_mem -= 2 * size;
+		} else {
+			priv->occupied_mem -= size;
+		}
+
 		return 0;
 	}
 
-	if (priv->occupied_mem + size >= cfg->dram_size) {
+	offset = priv->occupied_mem;
+
+
+	if (offset + size >= cfg->dram_size) {
 		LOG_ERR("Unable to allocate FIFO for 0x%02x", ep_cfg->addr);
 		return -ENOMEM;
 	}
 
+	if (is_db) {
+		if (offset + (size * 2) >= cfg->dram_size) {
+			LOG_ERR("Unable to allocate FIFO for 0x%02x", ep_cfg->addr);
+			return -ENOMEM;
+		}
+		priv->occupied_mem += size;
+
+		offset |=  priv->occupied_mem << 16;
+	}
+
 	/* Configure PMA offset for the endpoint */
-	hal_udc_ep_config(&priv->pcd, ep_cfg->addr, 0,
-				priv->occupied_mem);
+	hal_udc_ep_config(&priv->pcd, ep_cfg->addr, is_db, offset);
 
 	priv->occupied_mem += size;
 
