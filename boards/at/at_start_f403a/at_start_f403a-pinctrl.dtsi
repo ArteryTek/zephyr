@@ -35,7 +35,6 @@
 				 <i2S2_SD_PB15_TX_NORMP>;
 		};
 	};
-	adc
 	adc1_default: adc1_default {
 		group1 {
 			pinmux = <ADC1_IN0_PA0>, <ADC1_IN1_PA1>, <ADC1_IN2_PA2>;

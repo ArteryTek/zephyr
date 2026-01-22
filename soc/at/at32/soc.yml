@@ -16,3 +16,9 @@ family:
     socs:
     - name: at32f403a
     - name: at32f407
+  - name: at32f45x
+    socs:
+    - name: at32f455
+    - name: at32f456
+    - name: at32f457
+

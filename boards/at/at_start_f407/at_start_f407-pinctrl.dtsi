@@ -35,6 +35,14 @@
 				 <i2S2_SD_PB15_TX_NORMP>;
 		};
 	};
+
+	i2s3_default: i2s3_default {
+		group1 {
+			pinmux = <I2S3_WS_PA15_MASTER_NORMP>, <I2S2_SCK_PB13_MASTER_NORMP>,
+				 <i2S2_SD_PB15_TX_NORMP>;
+		};
+	};
+
 	adc1_default: adc1_default {
 		group1 {
 			pinmux = <ADC1_IN0_PA0>, <ADC1_IN1_PA1>, <ADC1_IN2_PA2>;

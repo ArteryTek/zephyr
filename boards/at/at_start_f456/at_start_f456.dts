@@ -5,13 +5,13 @@
  */
 
 /dts-v1/;
-#include <at/at32f403a_407/at32f407vgt7.dtsi>
-#include "at_start_f407-pinctrl.dtsi"
+#include <at/at32f45x/at32f456xet7.dtsi>
+#include "at_start_f456-pinctrl.dtsi"
 #include <zephyr/dt-bindings/input/input-event-codes.h>
 
 / {
-	model = "AT AT-START-F407 board";
-	compatible = "at,at_start_f407";
+	model = "AT AT-START-F456 board";
+	compatible = "at,at_start_f456";
 
 	chosen {
 		zephyr,console = &usart1;
@@ -73,6 +73,10 @@
     status = "okay";
 };
 
+&gpiof {
+    status = "okay";
+};
+
 &clk_hick {
 	status = "okay";
 };
@@ -83,9 +87,10 @@
 };
 
 &pll {
-	mul = <48>;
-	div_fu = <6>;
-	xtpre = <1>;
+	div-ms = <1>;
+	mul-ns = <96>;
+	div-fp = <2>;
+	div-fu = <4>;
 	clocks = <&clk_hext>;
 	status = "okay";
 };
@@ -104,11 +109,9 @@
 	status = "okay";
 };
 
-&usb_fs {
-    status = "okay";
-};
-
-zephyr_udc0: &usb_fs {
+zephyr_udc0: &usbotg_fs {
+	pinctrl-0 = <&otgfs_default>;
+	pinctrl-names = "default";
 	status = "okay";
 };
 
@@ -124,44 +127,32 @@ zephyr_udc0: &usb_fs {
 	pinctrl-0 = <&spi1_default>;
 	pinctrl-names = "default";
 	cs-gpios = <&gpioa 4 GPIO_ACTIVE_LOW>;
-	dmas = <&dma1 1 9 1 0>, <&dma1 2 10 2 0>;
+	dmas = <&dma1 1 10 1 0>, <&dma1 2 11 2 0>;
 	dma-names = "rx", "tx";
 };
 
 &i2c1 {
-	status = "okay";
+    status = "okay";
 	clock-frequency = <I2C_BITRATE_STANDARD>;
 	pinctrl-0 = <&i2c1_default>;
 	pinctrl-names = "default";
 };
 
+&timer2 {
+    status = "okay";
+	at,prescaler = <9999>;
+	
+	pwm1: pwm {
+		status = "okay";
+		pinctrl-0 = <&pwm1_default>;
+		pinctrl-names = "default";
+	};
+};
+
 &dma1 {
-	status = "okay";
+    status = "okay";
 };
 
-&i2s1 {
-	status = "okay";
-	pinctrl-0 = <&i2s1_default>;
-	pinctrl-names = "default";
-	dmas = <&dma1 1 9 AT32_DMA_MEMORY_ADDR_INC 0>;
-	dma-names = "rx";
-};
-
-&i2s2 {
-	status = "okay";
-	pinctrl-0 = <&i2s2_default>;
-	pinctrl-names = "default";
-	dmas = <&dma1 2 12 AT32_DMA_MEMORY_ADDR_INC 0>;
-	dma-names = "tx";
-};
-
-&i2s3 {
-	status = "okay";
-	pinctrl-0 = <&i2s3_default>;
-	pinctrl-names = "default";
-	dmas = <&dma1 3 14 AT32_DMA_MEMORY_ADDR_INC 0>;
-	dma-names = "tx";
-};
 
 &adc1 {
 	pinctrl-0 = <&adc1_default>;
@@ -169,10 +160,26 @@ zephyr_udc0: &usb_fs {
 	at,adc-clock-source = "SYNC";
 	at,adc-prescaler = <15>;
 	status = "okay";
-	dmas = <&dma1 3 1 (AT32_DMA_PERIPH_TO_MEMORY|AT32_DMA_NO_PERIPH_ADDR_INC| 
+	dmas = <&dma1 3 5 (AT32_DMA_PERIPH_TO_MEMORY|AT32_DMA_NO_PERIPH_ADDR_INC| 
 	                  AT32_DMA_MEMORY_ADDR_INC|AT32_DMA_PERIPH_WIDTH_16BIT|
 					  AT32_DMA_MEMORY_WIDTH_16BIT|AT32_DMA_PRIORITY_HIGH) 0>;
 	dma-names = "rx";
+};
+
+&i2s1 {
+	status = "okay";
+	pinctrl-0 = <&i2s1_default>;
+	pinctrl-names = "default";
+	dmas = <&dma1 4 10 AT32_DMA_MEMORY_ADDR_INC 0>;
+	dma-names = "rx";
+};
+
+&i2s2 {
+	status = "okay";
+	pinctrl-0 = <&i2s2_default>;
+	pinctrl-names = "default";
+	dmas = <&dma1 5 13 AT32_DMA_MEMORY_ADDR_INC 0>;
+	dma-names = "tx";
 };
 
 &flash0 {
@@ -194,16 +201,16 @@ zephyr_udc0: &usb_fs {
 			reg = <0x00010000 DT_SIZE_K(64)>;
 		};
 
-		/* application image slot: 384KB */
+		/* application image slot: 192KB */
 		slot0_partition: partition@20000 {
 			label = "image-0";
-			reg = <0x00020000 DT_SIZE_K(384)>;
+			reg = <0x00020000 DT_SIZE_K(192)>;
 		};
 
-		/* backup slot: 512KB */
-		slot1_partition: partition@80000 {
+		/* backup slot: 192KB */
+		slot1_partition: partition@50000 {
 			label = "image-1";
-			reg = <0x00080000 DT_SIZE_K(512)>;
+			reg = <0x00050000 DT_SIZE_K(192)>;
 		};
 	};
 };

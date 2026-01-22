@@ -1,0 +1,13 @@
+identifier: at_start_f456
+name: AT AT-START-F456
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+  - gnuarmemb
+  - xtools
+supported:
+  - gpio
+ram: 144
+flash: 512
+vendor: artery

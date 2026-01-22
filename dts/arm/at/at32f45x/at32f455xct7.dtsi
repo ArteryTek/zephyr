@@ -1,0 +1,24 @@
+/*
+ * Copyright (c) 2024, Maxjta
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <mem.h>
+#include <at/at32f45x/at32f45x.dtsi>
+
+/ {
+	soc {
+		flash-controller@40023c00 {
+			flash0: flash@8000000 {
+				reg = <0x08000000 DT_SIZE_K(256)>;
+				page-size = <DT_SIZE_K(2)>;
+				bank2-flash-size = <0>;
+			};
+		};
+
+		sram0: memory@20000000 {
+			reg = <0x20000000 DT_SIZE_K(144)>;
+		};
+	};
+};
