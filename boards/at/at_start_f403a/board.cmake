@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # keep first
-board_runner_args(pyocd "--target=at32f403avgt7")
+board_runner_args(pyocd "--target=AT32F403AVGT7")
 board_runner_args(jlink "--device=AT32F403AVGT7" "--speed=4000")
 
 include(${ZEPHYR_BASE}/boards/common/pyocd.board.cmake)

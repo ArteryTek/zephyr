@@ -110,7 +110,7 @@
 			flash0: flash@8000000 {
 				compatible = "at,at32-nv-flash-v1", "at,at32-nv-flash", "soc-nv-flash";
 				write-block-size = <2>;
-				max-erase-time = <40>;
+				max-erase-time = <500>;
 			};
 		};
 
